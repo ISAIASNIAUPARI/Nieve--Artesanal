@@ -1,0 +1,43 @@
+:root {
+  --bg: oklch(97.5% 0.012 80);
+  --ink: oklch(27% 0.035 45);
+  --ink-soft: oklch(45% 0.03 45);
+  --line: oklch(90% 0.015 80);
+  --accent: oklch(64% 0.17 35);
+  --accent-dark: oklch(50% 0.15 35);
+  --accent-light: oklch(80% 0.1 35);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.site {
+  margin: 0;
+  background: var(--bg);
+  font-family: var(--font-work-sans), sans-serif;
+}
+
+.site * {
+  box-sizing: border-box;
+}
+
+.site a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.site a:hover {
+  color: var(--accent-dark);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
