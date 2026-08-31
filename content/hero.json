@@ -1,0 +1,13 @@
+{
+  "badgeText": "Heladería artesanal",
+  "heading": "Helado  ✅prueba-adminhecho como debe ser",
+  "description": "Gelato, sorbetes y postres helados elaborados a diario con fruta de temporada, cacao real y crema fresca. Sin mezclas industriales.",
+  "primaryButtonText": "Ver sabores",
+  "primaryButtonLink": "#sabores",
+  "secondaryButtonText": "Cómo llegar",
+  "secondaryButtonLink": "#ubicacion",
+  "backgroundImage": {
+    "src": "/images/placeholder-hero.svg",
+    "alt": "Selección de helados, tortas y galletas artesanales"
+  }
+}
