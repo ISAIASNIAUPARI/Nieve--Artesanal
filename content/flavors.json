@@ -2,22 +2,22 @@
   "eyebrow": "La vitrina",
   "heading": "Sabores del día",
   "featuredImage": {
-    "src": "/images/placeholder-flavor-featured.svg",
+    "src": "/images/vitrina-sabores.png",
     "alt": "Vitrina con más de diez sabores de gelato artesanal"
   },
   "featuredImageCaption": "Más de 12 sabores rotativos",
   "secondaryImage1": {
-    "src": "/images/placeholder-flavor-1.svg",
+    "src": "/images/copa-chocolate-avellana.png",
     "alt": "Copa de chocolate con crocante de avellana"
   },
   "secondaryImage1Caption": "Chocolate con crocante",
   "secondaryImage2": {
-    "src": "/images/placeholder-flavor-2.svg",
+    "src": "/images/copa-soft-pistacho.png",
     "alt": "Copa de soft serve con crumble de pistacho"
   },
   "secondaryImage2Caption": "Soft de pistacho",
   "bannerImage": {
-    "src": "/images/placeholder-flavor-banner.svg",
+    "src": "/images/crepe-fresa.png",
     "alt": "Crepe relleno con helado de fresa y salsa de frutos rojos"
   },
   "bannerImageCaption": "Crepe con helado de fresa — nuestro postre firma"

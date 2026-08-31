@@ -7,7 +7,7 @@
   "secondaryButtonText": "Cómo llegar",
   "secondaryButtonLink": "#ubicacion",
   "backgroundImage": {
-    "src": "/images/placeholder-hero.svg",
+    "src": "/images/hero-vitrina-mix.png",
     "alt": "Selección de helados, tortas y galletas artesanales"
   }
 }
