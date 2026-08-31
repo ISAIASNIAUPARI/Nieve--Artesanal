@@ -1,6 +1,10 @@
-export interface SanityImageValue {
-  asset?: { _ref: string; _type: 'reference' }
+export interface ImageValue {
+  src: string
   alt?: string
+}
+
+export interface VideoValue {
+  src?: string
 }
 
 export interface SiteSettingsData {
@@ -16,7 +20,7 @@ export interface HeroSectionData {
   primaryButtonLink?: string
   secondaryButtonText?: string
   secondaryButtonLink?: string
-  backgroundImage?: SanityImageValue
+  backgroundImage?: ImageValue
 }
 
 export interface AboutSectionData {
@@ -24,26 +28,26 @@ export interface AboutSectionData {
   heading?: string
   paragraph1?: string
   paragraph2?: string
-  image?: SanityImageValue
+  image?: ImageValue
 }
 
 export interface FlavorsSectionData {
   eyebrow?: string
   heading?: string
-  featuredImage?: SanityImageValue
+  featuredImage?: ImageValue
   featuredImageCaption?: string
-  secondaryImage1?: SanityImageValue
+  secondaryImage1?: ImageValue
   secondaryImage1Caption?: string
-  secondaryImage2?: SanityImageValue
+  secondaryImage2?: ImageValue
   secondaryImage2Caption?: string
-  bannerImage?: SanityImageValue
+  bannerImage?: ImageValue
   bannerImageCaption?: string
 }
 
 export interface VideoSectionData {
   eyebrow?: string
   heading?: string
-  video?: { asset?: { _ref: string; _type: 'reference'; url?: string } }
+  video?: VideoValue
 }
 
 export interface LocationSectionData {
@@ -56,10 +60,22 @@ export interface LocationSectionData {
 }
 
 export interface HomePageData {
-  siteSettings?: SiteSettingsData
-  hero?: HeroSectionData
-  about?: AboutSectionData
-  flavors?: FlavorsSectionData
-  video?: VideoSectionData
-  location?: LocationSectionData
+  siteSettings: SiteSettingsData
+  hero: HeroSectionData
+  about: AboutSectionData
+  flavors: FlavorsSectionData
+  video: VideoSectionData
+  location: LocationSectionData
 }
+
+/** Nombre de archivo (dentro de /content) por sección — usado por el admin y por el commit a GitHub. */
+export const CONTENT_FILES = {
+  siteSettings: 'settings.json',
+  hero: 'hero.json',
+  about: 'about.json',
+  flavors: 'flavors.json',
+  video: 'video.json',
+  location: 'location.json',
+} as const
+
+export type SectionKey = keyof typeof CONTENT_FILES

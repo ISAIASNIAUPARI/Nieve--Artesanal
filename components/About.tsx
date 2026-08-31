@@ -1,9 +1,18 @@
-import { urlFor } from '@/sanity/lib/image'
-import type { AboutSectionData } from '@/sanity/lib/types'
+'use client'
 
-export default function About({ data }: { data?: AboutSectionData }) {
+import type { AboutSectionData } from '@/lib/types'
+import EditableText from './editable/EditableText'
+import EditableImage from './editable/EditableImage'
+
+interface AboutProps {
+  data?: AboutSectionData
+  edit?: boolean
+  onChange?: (field: keyof AboutSectionData, value: string) => void
+  onImageChange?: (field: keyof AboutSectionData, file: File) => void
+}
+
+export default function About({ data, edit, onChange, onImageChange }: AboutProps) {
   if (!data) return null
-  const imgUrl = data.image?.asset ? urlFor(data.image as any).width(1200).url() : undefined
 
   return (
     <section
@@ -17,31 +26,50 @@ export default function About({ data }: { data?: AboutSectionData }) {
       }}
     >
       <div>
-        {data.eyebrow && (
-          <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-            {data.eyebrow}
-          </span>
-        )}
-        <h2
+        <EditableText
+          edit={edit}
+          value={data.eyebrow}
+          onChange={(v) => onChange?.('eyebrow', v)}
+          placeholder="Antetítulo"
+          style={{ display: 'inline-block', color: 'var(--accent)', fontWeight: 600, fontSize: 14, letterSpacing: '.08em', textTransform: 'uppercase' }}
+        />
+        <EditableText
+          as="h2"
+          edit={edit}
+          value={data.heading}
+          onChange={(v) => onChange?.('heading', v)}
+          placeholder="Título de la sección"
           style={{
             fontFamily: 'var(--font-dm-serif), serif',
             fontSize: 'clamp(28px,3.5vw,42px)',
             margin: '12px 0 20px',
             color: 'var(--ink)',
           }}
-        >
-          {data.heading}
-        </h2>
-        {data.paragraph1 && (
-          <p style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: '0 0 18px' }}>{data.paragraph1}</p>
-        )}
-        {data.paragraph2 && <p style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}>{data.paragraph2}</p>}
+        />
+        <EditableText
+          as="p"
+          edit={edit}
+          value={data.paragraph1}
+          onChange={(v) => onChange?.('paragraph1', v)}
+          placeholder="Primer párrafo"
+          style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: '0 0 18px' }}
+        />
+        <EditableText
+          as="p"
+          edit={edit}
+          value={data.paragraph2}
+          onChange={(v) => onChange?.('paragraph2', v)}
+          placeholder="Segundo párrafo"
+          style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
+        />
       </div>
-      {imgUrl && (
-        <div style={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}>
-          <img src={imgUrl} alt={data.image?.alt || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
+      <EditableImage
+        src={data.image?.src}
+        alt={data.image?.alt}
+        edit={edit}
+        onFile={(file) => onImageChange?.('image', file)}
+        wrapperStyle={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
+      />
     </section>
   )
 }

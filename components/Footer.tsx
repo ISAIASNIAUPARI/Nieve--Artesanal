@@ -1,6 +1,15 @@
-import type { SiteSettingsData } from '@/sanity/lib/types'
+'use client'
 
-export default function Footer({ siteSettings }: { siteSettings?: SiteSettingsData }) {
+import type { SiteSettingsData } from '@/lib/types'
+import EditableText from './editable/EditableText'
+
+interface FooterProps {
+  siteSettings?: SiteSettingsData
+  edit?: boolean
+  onChange?: (field: keyof SiteSettingsData, value: string) => void
+}
+
+export default function Footer({ siteSettings, edit, onChange }: FooterProps) {
   const brandName = siteSettings?.brandName || 'Nieve Artesanal'
   const year = new Date().getFullYear()
 
@@ -18,9 +27,19 @@ export default function Footer({ siteSettings }: { siteSettings?: SiteSettingsDa
       }}
     >
       <div style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 18, color: 'var(--ink)' }}>{brandName}</div>
-      <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-soft)' }}>
-        © {year} {brandName}
-        {siteSettings?.footerNote ? `. ${siteSettings.footerNote}` : ''}
+      <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-soft)', display: 'flex', gap: 4, alignItems: 'baseline' }}>
+        <span>
+          © {year} {brandName}
+          {!edit && siteSettings?.footerNote ? '.' : ''}
+        </span>
+        {(edit || siteSettings?.footerNote) && (
+          <EditableText
+            edit={edit}
+            value={siteSettings?.footerNote}
+            onChange={(v) => onChange?.('footerNote', v)}
+            placeholder="Nota del pie de página"
+          />
+        )}
       </p>
     </footer>
   )

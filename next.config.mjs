@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cdn.sanity.io',
-      },
-    ],
-  },
+  // Next.js 16 genera AGENTS.md/CLAUDE.md automáticamente en cada `next dev`; no los necesitamos aquí.
+  agentRules: false,
 }
 
 export default nextConfig

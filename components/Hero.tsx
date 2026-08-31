@@ -1,71 +1,86 @@
-import { urlFor } from '@/sanity/lib/image'
-import type { HeroSectionData } from '@/sanity/lib/types'
+'use client'
 
-export default function Hero({ data }: { data?: HeroSectionData }) {
+import type { HeroSectionData } from '@/lib/types'
+import EditableText from './editable/EditableText'
+import EditableImage from './editable/EditableImage'
+
+interface HeroProps {
+  data?: HeroSectionData
+  edit?: boolean
+  onChange?: (field: keyof HeroSectionData, value: string) => void
+  onImageChange?: (field: keyof HeroSectionData, file: File) => void
+}
+
+export default function Hero({ data, edit, onChange, onImageChange }: HeroProps) {
   if (!data) return null
-  const bgUrl = data.backgroundImage?.asset ? urlFor(data.backgroundImage as any).width(1920).url() : undefined
-  const showSecondary = Boolean(data.secondaryButtonText && data.secondaryButtonLink)
+  const showSecondary = edit || Boolean(data.secondaryButtonText && data.secondaryButtonLink)
 
   return (
     <section style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
-      {bgUrl && (
-        <img
-          src={bgUrl}
-          alt={data.backgroundImage?.alt || ''}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center 30%',
-          }}
-        />
-      )}
+      <EditableImage
+        src={data.backgroundImage?.src}
+        alt={data.backgroundImage?.alt}
+        edit={edit}
+        onFile={(file) => onImageChange?.('backgroundImage', file)}
+        wrapperStyle={{ position: 'absolute', inset: 0 }}
+        imgStyle={{ objectPosition: 'center 30%' }}
+      />
       <div
         style={{
           position: 'absolute',
           inset: 0,
+          pointerEvents: 'none',
           background:
             'linear-gradient(90deg, oklch(27% 0.035 45 / 0.867) 0%, oklch(27% 0.035 45 / 0.533) 45%, oklch(27% 0.035 45 / 0.133) 100%)',
         }}
       />
       <div style={{ position: 'relative', zIndex: 2, padding: '0 6vw', maxWidth: 640, animation: 'fadeUp .8s ease' }}>
-        {data.badgeText && (
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '6px 16px',
-              border: '1px solid #ffffff55',
-              borderRadius: 999,
-              color: '#fff',
-              fontSize: 13,
-              letterSpacing: '.08em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}
-          >
-            {data.badgeText}
-          </span>
-        )}
-        <h1
+        <EditableText
+          edit={edit}
+          value={data.badgeText}
+          onChange={(v) => onChange?.('badgeText', v)}
+          placeholder="Etiqueta (ej. Heladería artesanal)"
           style={{
-            fontFamily: 'var(--font-dm-serif), serif',
-            fontSize: 'clamp(38px, 5.5vw, 68px)',
-            lineHeight: 1.05,
+            display: 'inline-block',
+            padding: '6px 16px',
+            border: '1px solid #ffffff55',
+            borderRadius: 999,
             color: '#fff',
-            margin: '0 0 20px',
+            fontSize: 13,
+            letterSpacing: '.08em',
+            textTransform: 'uppercase',
+            marginBottom: 20,
           }}
-        >
-          {data.heading}
-        </h1>
-        {data.description && (
-          <p style={{ fontSize: 18, lineHeight: 1.6, color: '#f2ede6', margin: '0 0 32px', maxWidth: 480 }}>{data.description}</p>
-        )}
+        />
+        <div>
+          <EditableText
+            as="h1"
+            edit={edit}
+            value={data.heading}
+            onChange={(v) => onChange?.('heading', v)}
+            placeholder="Título principal"
+            style={{
+              fontFamily: 'var(--font-dm-serif), serif',
+              fontSize: 'clamp(38px, 5.5vw, 68px)',
+              lineHeight: 1.05,
+              color: '#fff',
+              margin: '0 0 20px',
+            }}
+          />
+        </div>
+        <EditableText
+          as="p"
+          edit={edit}
+          value={data.description}
+          onChange={(v) => onChange?.('description', v)}
+          placeholder="Descripción breve"
+          style={{ fontSize: 18, lineHeight: 1.6, color: '#f2ede6', margin: '0 0 32px', maxWidth: 480 }}
+        />
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {data.primaryButtonText && data.primaryButtonLink && (
+          {(edit || (data.primaryButtonText && data.primaryButtonLink)) && (
             <a
-              href={data.primaryButtonLink}
+              href={data.primaryButtonLink || '#'}
+              onClick={(e) => edit && e.preventDefault()}
               style={{
                 padding: '14px 30px',
                 background: 'var(--accent)',
@@ -75,12 +90,13 @@ export default function Hero({ data }: { data?: HeroSectionData }) {
                 fontSize: 15,
               }}
             >
-              {data.primaryButtonText}
+              <EditableText edit={edit} value={data.primaryButtonText} onChange={(v) => onChange?.('primaryButtonText', v)} stopClickNavigation />
             </a>
           )}
           {showSecondary && (
             <a
-              href={data.secondaryButtonLink}
+              href={data.secondaryButtonLink || '#'}
+              onClick={(e) => edit && e.preventDefault()}
               style={{
                 padding: '14px 30px',
                 background: 'transparent',
@@ -91,7 +107,12 @@ export default function Hero({ data }: { data?: HeroSectionData }) {
                 fontSize: 15,
               }}
             >
-              {data.secondaryButtonText}
+              <EditableText
+                edit={edit}
+                value={data.secondaryButtonText}
+                onChange={(v) => onChange?.('secondaryButtonText', v)}
+                stopClickNavigation
+              />
             </a>
           )}
         </div>

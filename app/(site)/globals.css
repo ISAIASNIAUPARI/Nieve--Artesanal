@@ -41,3 +41,12 @@ html {
     transform: translateY(0);
   }
 }
+
+/* Placeholder de los campos editables del /admin (el contenido de un
+   contentEditable no puede pasarse como children de React, así que el
+   placeholder se resuelve por CSS en vez de por un valor por defecto en JSX). */
+.site [contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #99999977;
+  pointer-events: none;
+}

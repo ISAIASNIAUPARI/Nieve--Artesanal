@@ -1,6 +1,15 @@
-import type { SiteSettingsData } from '@/sanity/lib/types'
+'use client'
 
-export default function Header({ siteSettings }: { siteSettings?: SiteSettingsData }) {
+import type { SiteSettingsData } from '@/lib/types'
+import EditableText from './editable/EditableText'
+
+interface HeaderProps {
+  siteSettings?: SiteSettingsData
+  edit?: boolean
+  onChange?: (field: keyof SiteSettingsData, value: string) => void
+}
+
+export default function Header({ siteSettings, edit, onChange }: HeaderProps) {
   const brandName = siteSettings?.brandName || 'Nieve Artesanal'
 
   return (
@@ -18,22 +27,29 @@ export default function Header({ siteSettings }: { siteSettings?: SiteSettingsDa
         borderBottom: '1px solid var(--line)',
       }}
     >
-      <div style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 24, color: 'var(--ink)' }}>{brandName}</div>
+      <EditableText
+        edit={edit}
+        value={brandName}
+        onChange={(v) => onChange?.('brandName', v)}
+        placeholder="Nombre de la marca"
+        style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 24, color: 'var(--ink)' }}
+      />
       <nav style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-        <a href="#nosotros" style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
+        <a href="#nosotros" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
           Nosotros
         </a>
-        <a href="#sabores" style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
+        <a href="#sabores" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
           Sabores
         </a>
-        <a href="#video" style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
+        <a href="#video" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
           Cómo lo hacemos
         </a>
-        <a href="#ubicacion" style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
+        <a href="#ubicacion" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
           Ubicación
         </a>
         <a
           href="#contacto"
+          onClick={(e) => edit && e.preventDefault()}
           style={{
             padding: '10px 22px',
             background: 'var(--accent)',
