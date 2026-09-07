@@ -7,7 +7,7 @@
   "secondaryButtonText": "Cómo llegar",
   "secondaryButtonLink": "#ubicacion",
   "backgroundImage": {
-    "src": "/images/hero-vitrina-mix.png",
+    "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/hero-vitrina-mix",
     "alt": "Selección de helados, tortas y galletas artesanales"
   }
 }
