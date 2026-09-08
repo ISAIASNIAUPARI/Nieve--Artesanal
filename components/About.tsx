@@ -1,6 +1,6 @@
 'use client'
 
-import type { AboutSectionData } from '@/lib/types'
+import type { AboutSectionData, MediaUploadStatus } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
 
@@ -9,9 +9,10 @@ interface AboutProps {
   edit?: boolean
   onChange?: (field: keyof AboutSectionData, value: string) => void
   onImageChange?: (field: keyof AboutSectionData, file: File) => void
+  uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function About({ data, edit, onChange, onImageChange }: AboutProps) {
+export default function About({ data, edit, onChange, onImageChange, uploads }: AboutProps) {
   if (!data) return null
 
   return (
@@ -68,6 +69,7 @@ export default function About({ data, edit, onChange, onImageChange }: AboutProp
         alt={data.image?.alt}
         edit={edit}
         onFile={(file) => onImageChange?.('image', file)}
+        upload={uploads?.image}
         wrapperStyle={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
       />
     </section>

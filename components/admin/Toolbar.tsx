@@ -3,7 +3,8 @@
 import { useEdit } from './EditProvider'
 
 export default function Toolbar() {
-  const { isDirty, saving, saveError, lastSaved, save } = useEdit()
+  const { isDirty, saving, saveError, lastSaved, save, uploads } = useEdit()
+  const busyUploading = Object.values(uploads).some((u) => !u.error)
 
   return (
     <div
@@ -35,7 +36,8 @@ export default function Toolbar() {
             ✅ Guardado en GitHub — Vercel está desplegando (~1 min)
           </a>
         )}
-        {!saveError && isDirty && !saving && <span style={{ color: '#f5c25a' }}>Cambios sin guardar</span>}
+        {busyUploading && <span style={{ color: '#7db8ff' }}>Subiendo un archivo…</span>}
+        {!busyUploading && !saveError && isDirty && !saving && <span style={{ color: '#f5c25a' }}>Cambios sin guardar</span>}
         {saving && <span style={{ opacity: 0.8 }}>Guardando…</span>}
 
         <a href="/" target="_blank" rel="noreferrer" style={{ color: '#fff', opacity: 0.75, textDecoration: 'underline' }}>
@@ -51,15 +53,15 @@ export default function Toolbar() {
         </form>
         <button
           onClick={save}
-          disabled={!isDirty || saving}
+          disabled={!isDirty || saving || busyUploading}
           style={{
             padding: '9px 20px',
             borderRadius: 999,
             border: 'none',
             fontWeight: 700,
             fontSize: 14,
-            cursor: isDirty && !saving ? 'pointer' : 'default',
-            background: isDirty && !saving ? '#d7742f' : '#5a5048',
+            cursor: isDirty && !saving && !busyUploading ? 'pointer' : 'default',
+            background: isDirty && !saving && !busyUploading ? '#d7742f' : '#5a5048',
             color: '#fff',
           }}
         >

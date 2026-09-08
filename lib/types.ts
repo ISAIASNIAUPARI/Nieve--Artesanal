@@ -7,6 +7,31 @@ export interface VideoValue {
   src?: string
 }
 
+export interface ButtonValue {
+  text?: string
+  href?: string
+}
+
+/** Estado de una subida de medio en curso desde el /admin (para la barra de progreso). */
+export interface MediaUploadStatus {
+  pct: number
+  error: string | null
+}
+
+/**
+ * Un href es seguro si no arranca un esquema peligroso (javascript:, data:, vbscript:).
+ * Se usa tanto al validar en el /admin como al renderizar el sitio público.
+ */
+export function isSafeHref(href: string | undefined | null): boolean {
+  if (!href) return true
+  return !/^\s*(javascript|data|vbscript):/i.test(href)
+}
+
+/** Devuelve el href si es seguro; si no, '#'. */
+export function safeHref(href: string | undefined | null): string {
+  return href && isSafeHref(href) ? href : '#'
+}
+
 export interface SiteSettingsData {
   brandName?: string
   footerNote?: string
@@ -16,10 +41,8 @@ export interface HeroSectionData {
   badgeText?: string
   heading?: string
   description?: string
-  primaryButtonText?: string
-  primaryButtonLink?: string
-  secondaryButtonText?: string
-  secondaryButtonLink?: string
+  primaryButton?: ButtonValue
+  secondaryButton?: ButtonValue
   backgroundImage?: ImageValue
 }
 

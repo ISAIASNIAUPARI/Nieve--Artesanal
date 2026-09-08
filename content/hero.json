@@ -2,10 +2,14 @@
   "badgeText": "HELADERÍA",
   "heading": "Helado hecho con amor",
   "description": "Gelato, sorbetes y postres helados elaborados a diario con fruta de temporada, cacao real y crema fresca. Sin mezclas industriales.",
-  "primaryButtonText": "Ver sabores",
-  "primaryButtonLink": "#sabores",
-  "secondaryButtonText": "Cómo llegar",
-  "secondaryButtonLink": "#ubicacion",
+  "primaryButton": {
+    "text": "Ver sabores",
+    "href": "#sabores"
+  },
+  "secondaryButton": {
+    "text": "Cómo llegar",
+    "href": "#ubicacion"
+  },
   "backgroundImage": {
     "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/hero-vitrina-mix",
     "alt": "Selección de helados, tortas y galletas artesanales"
