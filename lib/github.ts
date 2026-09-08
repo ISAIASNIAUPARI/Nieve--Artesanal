@@ -3,9 +3,11 @@ import { Octokit } from '@octokit/rest'
 export interface FileChange {
   /** Ruta dentro del repo, ej: "content/hero.json" o "public/images/uploads/foo.jpg" */
   path: string
-  /** Contenido en texto (utf-8) o en base64 (para binarios como imágenes) */
-  content: string
-  encoding: 'utf-8' | 'base64'
+  /** Contenido en texto (utf-8) o en base64 (para binarios como imágenes). Ignorado si `remove` es true. */
+  content?: string
+  encoding?: 'utf-8' | 'base64'
+  /** Si es true, el archivo se elimina del repo en este commit. */
+  remove?: boolean
 }
 
 function getConfig() {
@@ -22,7 +24,7 @@ function getConfig() {
 }
 
 /**
- * Crea UN solo commit con todos los archivos cambiados (texto e imágenes juntos)
+ * Crea UN solo commit con todos los archivos cambiados (crear/editar/eliminar)
  * usando la Git Data API de GitHub (blobs → tree → commit → mover la rama).
  * Esto es lo que dispara el redeploy automático en Vercel.
  */
@@ -42,30 +44,29 @@ export async function commitFiles(files: FileChange[], message: string) {
   const { data: latestCommit } = await octokit.git.getCommit({ owner, repo, commit_sha: latestCommitSha })
   const baseTreeSha = latestCommit.tree.sha
 
-  // 3. Un blob por archivo cambiado
-  const blobs = await Promise.all(
+  // 3. Un blob por archivo que se crea o edita (los que se eliminan no llevan blob)
+  const tree = await Promise.all(
     files.map(async (file) => {
+      if (file.remove) {
+        // sha: null en la Git Data API = borrar el archivo del árbol.
+        return { path: file.path, mode: '100644' as const, type: 'blob' as const, sha: null }
+      }
       const { data: blob } = await octokit.git.createBlob({
         owner,
         repo,
-        content: file.content,
+        content: file.content ?? '',
         encoding: file.encoding === 'base64' ? 'base64' : 'utf-8',
       })
-      return { path: file.path, sha: blob.sha }
+      return { path: file.path, mode: '100644' as const, type: 'blob' as const, sha: blob.sha }
     })
   )
 
-  // 4. Árbol nuevo, basado en el árbol actual + los blobs cambiados
+  // 4. Árbol nuevo, basado en el árbol actual + los cambios
   const { data: newTree } = await octokit.git.createTree({
     owner,
     repo,
     base_tree: baseTreeSha,
-    tree: blobs.map((b) => ({
-      path: b.path,
-      mode: '100644' as const,
-      type: 'blob' as const,
-      sha: b.sha,
-    })),
+    tree,
   })
 
   // 5. Commit nuevo

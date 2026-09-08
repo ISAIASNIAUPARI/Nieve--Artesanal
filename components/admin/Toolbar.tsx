@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useEdit } from './EditProvider'
+import LayoutPanel from './LayoutPanel'
 
 export default function Toolbar() {
   const { isDirty, saving, saveError, lastSaved, save, uploads } = useEdit()
   const busyUploading = Object.values(uploads).some((u) => !u.error)
+  const [layoutOpen, setLayoutOpen] = useState(false)
 
   return (
     <div
@@ -26,8 +29,25 @@ export default function Toolbar() {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontWeight: 700 }}>✏️ Editor · Nieve Artesanal</span>
-        <span style={{ opacity: 0.6 }}>Clic en cualquier texto o imagen para editarlo</span>
+        <button
+          type="button"
+          onClick={() => setLayoutOpen(true)}
+          style={{
+            border: '1px solid #ffffff3b',
+            background: '#ffffff12',
+            color: '#fff',
+            borderRadius: 999,
+            padding: '6px 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          ☰ Organizar página
+        </button>
       </div>
+
+      {layoutOpen && <LayoutPanel onClose={() => setLayoutOpen(false)} />}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {saveError && <span style={{ color: '#ff8a8a' }}>⚠ {saveError}</span>}

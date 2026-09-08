@@ -1,8 +1,16 @@
 'use client'
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import type { HomePageData, MediaUploadStatus, SectionKey } from '@/lib/types'
-import { CONTENT_FILES } from '@/lib/types'
+import type {
+  Button,
+  DynamicSectionData,
+  HomePageData,
+  LayoutSection,
+  MediaUploadStatus,
+  PageLayout,
+  SectionKey,
+} from '@/lib/types'
+import { CONTENT_FILES, PAGE_LAYOUT_FILE, SECTION_LABELS, validateButtons } from '@/lib/types'
 import { uploadMediaToCloudinary, type MediaKind } from '@/lib/upload'
 
 interface SaveResult {
@@ -10,16 +18,29 @@ interface SaveResult {
   htmlUrl: string
 }
 
+interface SaveFile {
+  path: string
+  json: unknown
+}
+
+type DynamicMap = Record<string, DynamicSectionData>
+
 interface EditContextValue {
   content: HomePageData
+  layout: PageLayout
+  dynamic: DynamicMap
   isDirty: boolean
-  /** Edita un campo de texto de primer nivel de una sección. */
   setField: (section: SectionKey, field: string, value: string) => void
-  /** Edita una propiedad anidada de un objeto (ej. un botón: { text, href }). */
   setObjectField: (section: SectionKey, field: string, prop: string, value: string) => void
-  /** Sube una imagen o video a Cloudinary y guarda su URL en el campo indicado. */
+  setButtons: (section: SectionKey, buttons: Button[]) => void
+  setLayoutSections: (sections: LayoutSection[]) => void
+  /** Reemplaza el contenido completo de una sección dinámica. */
+  setDynamic: (id: string, data: DynamicSectionData) => void
+  /** Registra una sección recién creada por /api/admin/create-section (ya commiteada). */
+  registerCreatedSection: (id: string, data: DynamicSectionData, layout: LayoutSection[]) => void
+  /** Quita una sección recién borrada por /api/admin/delete-section (ya commiteada). */
+  unregisterDeletedSection: (id: string, layout: LayoutSection[]) => void
   uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<void>
-  /** Subidas en curso, por clave `${section}.${field}`. */
   uploads: Record<string, MediaUploadStatus>
   saving: boolean
   saveError: string | null
@@ -29,9 +50,23 @@ interface EditContextValue {
 
 const EditContext = createContext<EditContextValue | null>(null)
 
-export function EditProvider({ initialContent, children }: { initialContent: HomePageData; children: React.ReactNode }) {
+export function EditProvider({
+  initialContent,
+  initialLayout,
+  initialDynamic,
+  children,
+}: {
+  initialContent: HomePageData
+  initialLayout: PageLayout
+  initialDynamic: DynamicMap
+  children: React.ReactNode
+}) {
   const [content, setContent] = useState<HomePageData>(initialContent)
+  const [layout, setLayout] = useState<PageLayout>(initialLayout)
+  const [dynamic, setDynamicMap] = useState<DynamicMap>(initialDynamic)
   const [dirtySections, setDirtySections] = useState<Set<SectionKey>>(new Set())
+  const [dirtyDynamic, setDirtyDynamic] = useState<Set<string>>(new Set())
+  const [layoutDirty, setLayoutDirty] = useState(false)
   const [uploads, setUploads] = useState<Record<string, MediaUploadStatus>>({})
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -54,15 +89,58 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
     (section: SectionKey, field: string, prop: string, value: string) => {
       setContent((prev) => {
         const current = ((prev[section] as Record<string, unknown>)[field] as Record<string, unknown>) || {}
-        return {
-          ...prev,
-          [section]: { ...prev[section], [field]: { ...current, [prop]: value } },
-        }
+        return { ...prev, [section]: { ...prev[section], [field]: { ...current, [prop]: value } } }
       })
       markDirty(section)
     },
     [markDirty]
   )
+
+  const setButtons = useCallback(
+    (section: SectionKey, buttons: Button[]) => {
+      setContent((prev) => ({ ...prev, [section]: { ...prev[section], buttons } }))
+      markDirty(section)
+    },
+    [markDirty]
+  )
+
+  const setLayoutSections = useCallback((sections: LayoutSection[]) => {
+    setLayout({ sections })
+    setLayoutDirty(true)
+    setLastSaved(null)
+  }, [])
+
+  const setDynamic = useCallback((id: string, data: DynamicSectionData) => {
+    setDynamicMap((prev) => ({ ...prev, [id]: data }))
+    setDirtyDynamic((prev) => new Set(prev).add(id))
+    setLastSaved(null)
+  }, [])
+
+  const registerCreatedSection = useCallback(
+    (id: string, data: DynamicSectionData, nextLayout: LayoutSection[]) => {
+      setDynamicMap((prev) => ({ ...prev, [id]: data }))
+      setLayout({ sections: nextLayout })
+      setLayoutDirty(false) // create-section ya commiteó pageLayout.json
+      setLastSaved(null)
+    },
+    []
+  )
+
+  const unregisterDeletedSection = useCallback((id: string, nextLayout: LayoutSection[]) => {
+    setDynamicMap((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    setDirtyDynamic((prev) => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+    setLayout({ sections: nextLayout })
+    setLayoutDirty(false)
+    setLastSaved(null)
+  }, [])
 
   const uploadMedia = useCallback(
     async (section: SectionKey, field: string, file: File, kind: MediaKind) => {
@@ -93,40 +171,67 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
   )
 
   const save = useCallback(async () => {
-    if (dirtySections.size === 0) return
+    if (dirtySections.size === 0 && dirtyDynamic.size === 0 && !layoutDirty) return
+
+    // Validación de botones antes de guardar.
+    for (const key of dirtySections) {
+      const err = validateButtons((content[key] as { buttons?: Button[] }).buttons, SECTION_LABELS[key])
+      if (err) return setSaveError(err)
+    }
+    for (const id of dirtyDynamic) {
+      const d = dynamic[id]
+      if (d?.type === 'cta-banner') {
+        const err = validateButtons(d.buttons, 'Banner', 2)
+        if (err) return setSaveError(err)
+      }
+    }
+
     setSaving(true)
     setSaveError(null)
     try {
-      const sections = Array.from(dirtySections).map((key) => ({
+      const files: SaveFile[] = Array.from(dirtySections).map((key) => ({
         path: `content/${CONTENT_FILES[key]}`,
         json: content[key],
       }))
+      for (const id of dirtyDynamic) {
+        files.push({ path: `content/sections/${id}.json`, json: dynamic[id] })
+      }
+      if (layoutDirty) {
+        files.push({ path: `content/${PAGE_LAYOUT_FILE}`, json: layout })
+      }
 
       const res = await fetch('/api/admin/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sections }),
+        body: JSON.stringify({ sections: files }),
       })
       const data = await res.json()
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || 'No se pudo guardar.')
-      }
+      if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo guardar.')
 
       setDirtySections(new Set())
+      setDirtyDynamic(new Set())
+      setLayoutDirty(false)
       setLastSaved({ sha: data.sha, htmlUrl: data.htmlUrl })
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Error desconocido al guardar.')
     } finally {
       setSaving(false)
     }
-  }, [content, dirtySections])
+  }, [content, dirtySections, dynamic, dirtyDynamic, layout, layoutDirty])
 
   const value = useMemo<EditContextValue>(
     () => ({
       content,
-      isDirty: dirtySections.size > 0,
+      layout,
+      dynamic,
+      isDirty: dirtySections.size > 0 || dirtyDynamic.size > 0 || layoutDirty,
       setField,
       setObjectField,
+      setButtons,
+      setLayoutSections,
+      setDynamic,
+      registerCreatedSection,
+      unregisterDeletedSection,
       uploadMedia,
       uploads,
       saving,
@@ -134,7 +239,27 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
       lastSaved,
       save,
     }),
-    [content, dirtySections, setField, setObjectField, uploadMedia, uploads, saving, saveError, lastSaved, save]
+    [
+      content,
+      layout,
+      dynamic,
+      dirtySections,
+      dirtyDynamic,
+      layoutDirty,
+      setField,
+      setObjectField,
+      setButtons,
+      setLayoutSections,
+      setDynamic,
+      registerCreatedSection,
+      unregisterDeletedSection,
+      uploadMedia,
+      uploads,
+      saving,
+      saveError,
+      lastSaved,
+      save,
+    ]
   )
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>

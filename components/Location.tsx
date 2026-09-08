@@ -1,21 +1,24 @@
 'use client'
 
-import type { LocationSectionData } from '@/lib/types'
+import type { Button, LocationSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import ContactForm from './ContactForm'
+import SectionButtons from './sections/SectionButtons'
+import ButtonsEditor from './admin/ButtonsEditor'
 
 interface LocationProps {
   data?: LocationSectionData
   edit?: boolean
   onChange?: (field: keyof LocationSectionData, value: string) => void
+  onButtonsChange?: (buttons: Button[]) => void
 }
 
-export default function Location({ data, edit, onChange }: LocationProps) {
+export default function Location({ data, edit, onChange, onButtonsChange }: LocationProps) {
   if (!data) return null
 
   return (
     <section
-      id="ubicacion"
+      id="location"
       style={{
         padding: '100px 6vw',
         background: 'var(--ink)',
@@ -58,6 +61,10 @@ export default function Location({ data, edit, onChange }: LocationProps) {
             <EditableText edit={edit} value={data.phone} onChange={(v) => onChange?.('phone', v)} placeholder="Teléfono" />
           </div>
         </div>
+        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} style={{ marginTop: 28 }} />
+        {edit && onButtonsChange && (
+          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Ubicación" />
+        )}
       </div>
       <ContactForm confirmationMessage={data.confirmationMessage} />
     </section>

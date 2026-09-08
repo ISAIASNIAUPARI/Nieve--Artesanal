@@ -1,8 +1,10 @@
 'use client'
 
-import type { FlavorsSectionData, ImageValue, MediaUploadStatus } from '@/lib/types'
+import type { Button, FlavorsSectionData, ImageValue, MediaUploadStatus } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
+import SectionButtons from './sections/SectionButtons'
+import ButtonsEditor from './admin/ButtonsEditor'
 
 function Tile({
   image,
@@ -53,15 +55,16 @@ interface FlavorsProps {
   data?: FlavorsSectionData
   edit?: boolean
   onChange?: (field: keyof FlavorsSectionData, value: string) => void
+  onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof FlavorsSectionData, file: File) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function Flavors({ data, edit, onChange, onImageChange, uploads }: FlavorsProps) {
+export default function Flavors({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: FlavorsProps) {
   if (!data) return null
 
   return (
-    <section id="sabores" style={{ padding: '20px 6vw 100px' }}>
+    <section id="flavors" style={{ padding: '20px 6vw 100px' }}>
       <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 56px' }}>
         <EditableText
           edit={edit}
@@ -119,6 +122,12 @@ export default function Flavors({ data, edit, onChange, onImageChange, uploads }
             onCaptionChange={(v) => onChange?.('bannerImageCaption', v)}
             upload={uploads?.bannerImage}
           />
+        </div>
+      )}
+      <SectionButtons buttons={data.buttons} tone="light" edit={edit} align="center" style={{ marginTop: 44 }} />
+      {edit && onButtonsChange && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Sabores" />
         </div>
       )}
     </section>

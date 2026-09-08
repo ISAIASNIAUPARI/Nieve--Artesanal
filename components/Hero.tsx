@@ -1,31 +1,25 @@
 'use client'
 
-import type { HeroSectionData, MediaUploadStatus } from '@/lib/types'
-import { safeHref } from '@/lib/types'
+import type { Button, HeroSectionData, MediaUploadStatus } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
-import EditableLink from './editable/EditableLink'
-
-type ButtonField = 'primaryButton' | 'secondaryButton'
+import SectionButtons from './sections/SectionButtons'
+import ButtonsEditor from './admin/ButtonsEditor'
 
 interface HeroProps {
   data?: HeroSectionData
   edit?: boolean
   onChange?: (field: keyof HeroSectionData, value: string) => void
-  onButtonChange?: (field: ButtonField, prop: 'text' | 'href', value: string) => void
+  onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof HeroSectionData, file: File) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function Hero({ data, edit, onChange, onButtonChange, onImageChange, uploads }: HeroProps) {
+export default function Hero({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: HeroProps) {
   if (!data) return null
-  const primary = data.primaryButton
-  const secondary = data.secondaryButton
-  const showPrimary = edit || Boolean(primary?.text && primary?.href)
-  const showSecondary = edit || Boolean(secondary?.text && secondary?.href)
 
   return (
-    <section style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
+    <section id="hero" style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
       <EditableImage
         src={data.backgroundImage?.src}
         alt={data.backgroundImage?.alt}
@@ -86,73 +80,10 @@ export default function Hero({ data, edit, onChange, onButtonChange, onImageChan
           placeholder="Descripción breve"
           style={{ fontSize: 18, lineHeight: 1.6, color: '#f2ede6', margin: '0 0 32px', maxWidth: 480 }}
         />
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          {showPrimary && (
-            <div>
-              <a
-                href={safeHref(primary?.href)}
-                onClick={(e) => edit && e.preventDefault()}
-                style={{
-                  display: 'inline-block',
-                  padding: '14px 30px',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  borderRadius: 999,
-                  fontWeight: 600,
-                  fontSize: 15,
-                }}
-              >
-                <EditableText
-                  edit={edit}
-                  value={primary?.text}
-                  onChange={(v) => onButtonChange?.('primaryButton', 'text', v)}
-                  placeholder="Texto del botón"
-                  stopClickNavigation
-                />
-              </a>
-              {edit && (
-                <EditableLink
-                  label="URL del botón primario"
-                  value={primary?.href}
-                  onChange={(v) => onButtonChange?.('primaryButton', 'href', v)}
-                />
-              )}
-            </div>
-          )}
-          {showSecondary && (
-            <div>
-              <a
-                href={safeHref(secondary?.href)}
-                onClick={(e) => edit && e.preventDefault()}
-                style={{
-                  display: 'inline-block',
-                  padding: '14px 30px',
-                  background: 'transparent',
-                  border: '1px solid #fff',
-                  color: '#fff',
-                  borderRadius: 999,
-                  fontWeight: 600,
-                  fontSize: 15,
-                }}
-              >
-                <EditableText
-                  edit={edit}
-                  value={secondary?.text}
-                  onChange={(v) => onButtonChange?.('secondaryButton', 'text', v)}
-                  placeholder="Texto del botón"
-                  stopClickNavigation
-                />
-              </a>
-              {edit && (
-                <EditableLink
-                  label="URL del botón secundario"
-                  value={secondary?.href}
-                  onChange={(v) => onButtonChange?.('secondaryButton', 'href', v)}
-                />
-              )}
-            </div>
-          )}
-        </div>
+        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} />
+        {edit && onButtonsChange && (
+          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Portada" />
+        )}
       </div>
     </section>
   )
