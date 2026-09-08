@@ -4,7 +4,7 @@
   "description": "Gelato, sorbetes y postres helados elaborados a diario con fruta de temporada, cacao real y crema fresca. Sin mezclas industriales.",
   "primaryButton": {
     "text": "Ver sabores",
-    "href": "#opciones"
+    "href": "#sabores"
   },
   "secondaryButton": {
     "text": "Cómo llegar",
