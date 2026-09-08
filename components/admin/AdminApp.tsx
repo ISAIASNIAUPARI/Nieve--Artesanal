@@ -1,6 +1,13 @@
 'use client'
 
-import type { BaseSectionId, HomePageData, MediaUploadStatus, PageLayout, SectionKey } from '@/lib/types'
+import type {
+  BaseSectionId,
+  DynamicSectionData,
+  HomePageData,
+  MediaUploadStatus,
+  PageLayout,
+  SectionKey,
+} from '@/lib/types'
 import { isBaseSectionId } from '@/lib/types'
 import { EditProvider, useEdit } from './EditProvider'
 import Toolbar from './Toolbar'
@@ -11,9 +18,10 @@ import Flavors from '@/components/Flavors'
 import VideoSection from '@/components/VideoSection'
 import Location from '@/components/Location'
 import Footer from '@/components/Footer'
+import DynamicSection from '@/components/sections/DynamicSection'
 
 function AdminSite() {
-  const { content, layout, setField, setButtons, uploadMedia, uploads } = useEdit()
+  const { content, layout, dynamic, setField, setButtons, setDynamic, uploadMedia, uploads } = useEdit()
 
   // uploads viene con claves `${section}.${field}`; cada componente quiere solo su sección.
   const sectionUploads = (section: SectionKey): Record<string, MediaUploadStatus> => {
@@ -87,7 +95,19 @@ function AdminSite() {
           onChange={(field, value) => setField('siteSettings', field, value)}
         />
         {layout.sections.map((s) => {
-          if (!isBaseSectionId(s.id)) return null
+          let body: React.ReactNode = null
+          if (isBaseSectionId(s.id)) {
+            body = editors[s.id]
+          } else {
+            const d = dynamic[s.id]
+            body = d ? (
+              <DynamicSection id={s.id} data={d} edit onChange={(next: DynamicSectionData) => setDynamic(s.id, next)} />
+            ) : (
+              <div style={{ padding: '40px 6vw', color: 'var(--ink-soft)', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
+                «{s.label}» se está creando… recarga en ~1 min cuando Vercel termine de desplegar.
+              </div>
+            )
+          }
           return (
             <div key={s.id} style={{ position: 'relative' }}>
               {!s.visible && (
@@ -104,7 +124,7 @@ function AdminSite() {
                   🚫 «{s.label}» está oculta en el sitio público — la puedes seguir editando aquí.
                 </div>
               )}
-              <div style={{ opacity: s.visible ? 1 : 0.5 }}>{editors[s.id]}</div>
+              <div style={{ opacity: s.visible ? 1 : 0.5 }}>{body}</div>
             </div>
           )
         })}
@@ -117,12 +137,14 @@ function AdminSite() {
 export default function AdminApp({
   initialContent,
   initialLayout,
+  initialDynamic,
 }: {
   initialContent: HomePageData
   initialLayout: PageLayout
+  initialDynamic: Record<string, DynamicSectionData>
 }) {
   return (
-    <EditProvider initialContent={initialContent} initialLayout={initialLayout}>
+    <EditProvider initialContent={initialContent} initialLayout={initialLayout} initialDynamic={initialDynamic}>
       <AdminSite />
     </EditProvider>
   )

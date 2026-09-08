@@ -1,4 +1,4 @@
-import { getHomePageData, getPageLayout } from '@/lib/content'
+import { getDynamicSection, getHomePageData, getPageLayout } from '@/lib/content'
 import { isBaseSectionId, type BaseSectionId } from '@/lib/types'
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
@@ -7,6 +7,7 @@ import Flavors from '@/components/Flavors'
 import VideoSection from '@/components/VideoSection'
 import Location from '@/components/Location'
 import Footer from '@/components/Footer'
+import DynamicSection from '@/components/sections/DynamicSection'
 
 export default function HomePage() {
   const data = getHomePageData()
@@ -27,7 +28,9 @@ export default function HomePage() {
         .filter((s) => s.visible)
         .map((s) => {
           if (isBaseSectionId(s.id)) return <div key={s.id}>{baseSections[s.id]}</div>
-          return null
+          const dynamic = getDynamicSection(s.id)
+          if (!dynamic) return null
+          return <DynamicSection key={s.id} id={s.id} data={dynamic} />
         })}
       <Footer siteSettings={data.siteSettings} />
     </div>

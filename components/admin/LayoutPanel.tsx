@@ -1,7 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import type { LayoutSection } from '@/lib/types'
+import { templateTypeOf } from '@/lib/types'
 import { useEdit } from './EditProvider'
+import NewSectionModal from './NewSectionModal'
 
 const overlay: React.CSSProperties = {
   position: 'fixed',
@@ -17,13 +20,14 @@ const overlay: React.CSSProperties = {
 
 const panel: React.CSSProperties = {
   width: '100%',
-  maxWidth: 460,
+  maxWidth: 480,
+  maxHeight: 'calc(100vh - 120px)',
+  overflowY: 'auto',
   background: '#1c1310',
   color: '#fff',
   borderRadius: 14,
   border: '1px solid #ffffff22',
   boxShadow: '0 30px 80px -20px #000',
-  overflow: 'hidden',
 }
 
 const iconBtn = (enabled: boolean): React.CSSProperties => ({
@@ -39,12 +43,16 @@ const iconBtn = (enabled: boolean): React.CSSProperties => ({
 })
 
 /**
- * "Organizar página": reordenar y ocultar/mostrar las secciones.
- * Escribe el resultado en content/pageLayout.json al pulsar "Guardar" en la barra.
+ * "Organizar página": reordenar, ocultar/mostrar, crear y eliminar secciones.
+ * El orden/visibilidad se guarda con "Guardar" en la barra; crear y eliminar
+ * commitean de inmediato (vía sus propias rutas API).
  */
 export default function LayoutPanel({ onClose }: { onClose: () => void }) {
-  const { layout, setLayoutSections } = useEdit()
+  const { layout, setLayoutSections, isDirty, unregisterDeletedSection } = useEdit()
   const sections = layout.sections
+  const [newOpen, setNewOpen] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir
@@ -59,6 +67,26 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
 
   const heroHidden = sections.some((s: LayoutSection) => s.id === 'hero' && !s.visible)
 
+  async function remove(section: LayoutSection) {
+    if (!confirm(`¿Eliminar la sección «${section.label}»? No se puede deshacer.`)) return
+    setDeleting(section.id)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/delete-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: section.id, label: section.label, layout: sections }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo eliminar.')
+      unregisterDeletedSection(section.id, data.layout)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al eliminar.')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   return (
     <div style={overlay} onClick={onClose}>
       <div style={panel} onClick={(e) => e.stopPropagation()}>
@@ -69,6 +97,9 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
             justifyContent: 'space-between',
             padding: '14px 18px',
             borderBottom: '1px solid #ffffff1f',
+            position: 'sticky',
+            top: 0,
+            background: '#1c1310',
           }}
         >
           <strong style={{ fontSize: 15 }}>Organizar página</strong>
@@ -83,66 +114,121 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
 
         <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={{ margin: '0 0 6px', fontSize: 12, opacity: 0.6 }}>
-            Usa las flechas para cambiar el orden. El ojo muestra u oculta la sección.
+            Flechas para el orden · el ojo muestra u oculta · 🗑 elimina las secciones nuevas.
           </p>
 
-          {sections.map((s, i) => (
-            <div
-              key={s.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 10px',
-                borderRadius: 10,
-                background: s.visible ? '#ffffff10' : '#ffffff06',
-                border: '1px solid #ffffff1a',
-                opacity: s.visible ? 1 : 0.55,
-              }}
-            >
-              <div style={{ display: 'flex', gap: 4 }}>
-                <button type="button" style={iconBtn(i > 0)} onClick={() => move(i, -1)} disabled={i === 0} title="Subir">
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  style={iconBtn(i < sections.length - 1)}
-                  onClick={() => move(i, 1)}
-                  disabled={i === sections.length - 1}
-                  title="Bajar"
-                >
-                  ↓
-                </button>
-              </div>
+          {error && <p style={{ margin: 0, fontSize: 12, color: '#ff8a8a' }}>⚠ {error}</p>}
 
-              <span style={{ flex: 1, fontSize: 14 }}>{s.label}</span>
-
-              <button
-                type="button"
-                onClick={() => toggle(s.id)}
-                title={s.visible ? 'Ocultar' : 'Mostrar'}
+          {sections.map((s, i) => {
+            const isDynamic = !!templateTypeOf(s.id)
+            return (
+              <div
+                key={s.id}
                 style={{
-                  border: '1px solid #ffffff3b',
-                  background: '#ffffff12',
-                  color: '#fff',
-                  borderRadius: 8,
-                  padding: '5px 10px',
-                  cursor: 'pointer',
-                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 10px',
+                  borderRadius: 10,
+                  background: s.visible ? '#ffffff10' : '#ffffff06',
+                  border: '1px solid #ffffff1a',
+                  opacity: deleting === s.id ? 0.4 : s.visible ? 1 : 0.55,
                 }}
               >
-                {s.visible ? '👁 Visible' : '🚫 Oculta'}
-              </button>
-            </div>
-          ))}
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button type="button" style={iconBtn(i > 0)} onClick={() => move(i, -1)} disabled={i === 0} title="Subir">
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    style={iconBtn(i < sections.length - 1)}
+                    onClick={() => move(i, 1)}
+                    disabled={i === sections.length - 1}
+                    title="Bajar"
+                  >
+                    ↓
+                  </button>
+                </div>
+
+                <span style={{ flex: 1, fontSize: 14 }}>
+                  {s.label}
+                  {isDynamic && <span style={{ opacity: 0.4, fontSize: 11 }}> · nueva</span>}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => toggle(s.id)}
+                  title={s.visible ? 'Ocultar' : 'Mostrar'}
+                  style={{
+                    border: '1px solid #ffffff3b',
+                    background: '#ffffff12',
+                    color: '#fff',
+                    borderRadius: 8,
+                    padding: '5px 9px',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                  }}
+                >
+                  {s.visible ? '👁' : '🚫'}
+                </button>
+
+                {isDynamic && (
+                  <button
+                    type="button"
+                    onClick={() => remove(s)}
+                    disabled={deleting !== null || isDirty}
+                    title={isDirty ? 'Guarda tus cambios primero' : 'Eliminar sección'}
+                    style={{
+                      border: '1px solid #e0808055',
+                      background: '#ffffff10',
+                      color: '#ff9a9a',
+                      borderRadius: 8,
+                      padding: '5px 9px',
+                      cursor: deleting !== null || isDirty ? 'default' : 'pointer',
+                      fontSize: 12,
+                    }}
+                  >
+                    🗑
+                  </button>
+                )}
+              </div>
+            )
+          })}
 
           {heroHidden && (
             <p style={{ margin: '6px 0 0', fontSize: 12, color: '#f5c25a' }}>
-              ⚠ La portada está oculta. La página empezará directamente por la siguiente sección visible.
+              ⚠ La portada está oculta. La página empezará por la siguiente sección visible.
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setNewOpen(true)}
+            disabled={isDirty}
+            title={isDirty ? 'Guarda tus cambios primero' : undefined}
+            style={{
+              marginTop: 8,
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px dashed #ffffff55',
+              background: 'transparent',
+              color: isDirty ? '#ffffff55' : '#fff',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: isDirty ? 'default' : 'pointer',
+            }}
+          >
+            + Nueva sección
+          </button>
+          {isDirty && (
+            <p style={{ margin: 0, fontSize: 11, opacity: 0.55 }}>
+              Guarda los cambios pendientes antes de crear o eliminar una sección.
             </p>
           )}
         </div>
       </div>
+
+      {newOpen && <NewSectionModal onClose={() => setNewOpen(false)} />}
     </div>
   )
 }

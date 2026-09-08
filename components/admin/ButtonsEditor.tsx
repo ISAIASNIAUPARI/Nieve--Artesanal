@@ -58,10 +58,12 @@ export default function ButtonsEditor({
   buttons,
   onChange,
   sectionLabel,
+  max = MAX_BUTTONS,
 }: {
   buttons: Button[]
   onChange: (buttons: Button[]) => void
   sectionLabel: string
+  max?: number
 }) {
   const update = (id: string, patch: Partial<Button>) =>
     onChange(buttons.map((b) => (b.id === id ? { ...b, ...patch } : b)))
@@ -77,14 +79,14 @@ export default function ButtonsEditor({
   }
 
   const add = () => {
-    if (buttons.length >= MAX_BUTTONS) return
+    if (buttons.length >= max) return
     onChange([...buttons, newButton()])
   }
 
   return (
     <div style={box} onClick={(e) => e.stopPropagation()}>
       <strong style={{ fontSize: 12, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '.05em' }}>
-        Botones de «{sectionLabel}» ({buttons.length}/{MAX_BUTTONS})
+        Botones de «{sectionLabel}» ({buttons.length}/{max})
       </strong>
 
       {buttons.length === 0 && <span style={{ opacity: 0.6 }}>Esta sección no tiene botones.</span>}
@@ -212,17 +214,17 @@ export default function ButtonsEditor({
       <button
         type="button"
         onClick={add}
-        disabled={buttons.length >= MAX_BUTTONS}
+        disabled={buttons.length >= max}
         style={{
           alignSelf: 'flex-start',
           padding: '8px 14px',
           borderRadius: 999,
           border: '1px dashed #ffffff55',
           background: 'transparent',
-          color: buttons.length >= MAX_BUTTONS ? '#ffffff55' : '#fff',
+          color: buttons.length >= max ? '#ffffff55' : '#fff',
           fontSize: 13,
           fontWeight: 600,
-          cursor: buttons.length >= MAX_BUTTONS ? 'default' : 'pointer',
+          cursor: buttons.length >= max ? 'default' : 'pointer',
         }}
       >
         + Añadir botón

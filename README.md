@@ -53,10 +53,16 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
   `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
 - `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
 - `components/editable/` — `EditableText` y `EditableImage`, las piezas reutilizables del editor
-- `components/sections/` — piezas compartidas de sección (ej. `SectionButtons`)
+- `components/sections/` — piezas compartidas y las 5 plantillas de sección nueva
+  (`CtaBanner`, `MenuGrid`, `TextBlock`, `PhotoGallery`, `Faq`, más `DynamicSection` que
+  elige cuál renderizar por el campo `type`)
 - `content/` — el contenido real del sitio, un JSON por sección
-- `content/pageLayout.json` — orden y visibilidad de las secciones (editable desde
-  «Organizar página» en `/admin`); `app/(site)/page.tsx` renderiza según este archivo
+- `content/pageLayout.json` — orden y visibilidad de TODAS las secciones (base +
+  nuevas); editable desde «Organizar página» en `/admin`
+- `content/sections/<id>.json` — una sección creada desde plantilla; su `id` es
+  `<tipo>-<slug>` (ej. `cta-banner-promo-verano`)
+- `app/api/admin/create-section` / `delete-section` — crean/eliminan una sección
+  (commit inmediato a GitHub; nunca tocan las 5 secciones base)
 - `lib/upload.ts` — subida navegador → Cloudinary con barra de progreso (cliente)
 - Las imágenes y el video se sirven desde Cloudinary (folder `nieve-artesanal`). Lo que se
   sube desde `/admin` va directo a Cloudinary; en el JSON solo se guarda la URL pública.

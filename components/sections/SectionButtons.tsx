@@ -3,7 +3,7 @@
 import type { Button } from '@/lib/types'
 import { resolveButtonHref } from '@/lib/types'
 
-type Tone = 'light' | 'dark'
+type Tone = 'light' | 'dark' | 'onAccent'
 
 /**
  * Renderiza la barra de botones de una sección a partir del array `buttons`.
@@ -31,7 +31,8 @@ export default function SectionButtons({
   const list = (buttons || []).filter((b) => b.text?.trim() && b.href?.trim())
   if (list.length === 0) return null
 
-  const fg = tone === 'dark' ? '#fff' : 'var(--ink)'
+  const onDark = tone === 'dark' || tone === 'onAccent'
+  const fg = onDark ? '#fff' : 'var(--ink)'
 
   const styleFor = (index: number): React.CSSProperties => {
     const base: React.CSSProperties = {
@@ -42,19 +43,22 @@ export default function SectionButtons({
       fontSize: 15,
       lineHeight: 1.2,
     }
-    if (index === 0) return { ...base, background: 'var(--accent)', color: '#fff' }
+    if (index === 0) {
+      if (tone === 'onAccent') return { ...base, background: '#fff', color: 'var(--accent)' }
+      return { ...base, background: 'var(--accent)', color: '#fff' }
+    }
     if (index === 1)
       return {
         ...base,
         background: 'transparent',
-        border: `1px solid ${tone === 'dark' ? '#fff' : 'var(--accent)'}`,
-        color: tone === 'dark' ? '#fff' : 'var(--accent)',
+        border: `1px solid ${onDark ? '#fff' : 'var(--accent)'}`,
+        color: onDark ? '#fff' : 'var(--accent)',
       }
     return {
       ...base,
       padding: '14px 22px',
       background: 'transparent',
-      border: `1px solid ${tone === 'dark' ? '#ffffff55' : 'var(--line)'}`,
+      border: `1px solid ${onDark ? '#ffffff77' : 'var(--line)'}`,
       color: fg,
     }
   }

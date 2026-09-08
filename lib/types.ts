@@ -82,10 +82,14 @@ export function resolveButtonHref(button: Pick<Button, 'href' | 'hrefType'>): st
 }
 
 /** Valida un array de botones antes de guardar. Devuelve un mensaje de error o null. */
-export function validateButtons(buttons: Button[] | undefined, sectionLabel: string): string | null {
+export function validateButtons(
+  buttons: Button[] | undefined,
+  sectionLabel: string,
+  max: number = MAX_BUTTONS
+): string | null {
   if (!buttons || buttons.length === 0) return null
-  if (buttons.length > MAX_BUTTONS) {
-    return `${sectionLabel}: máximo ${MAX_BUTTONS} botones por sección.`
+  if (buttons.length > max) {
+    return `${sectionLabel}: máximo ${max} ${max === 1 ? 'botón' : 'botones'}.`
   }
   for (const b of buttons) {
     if (!b.text?.trim()) return `${sectionLabel}: hay un botón sin texto.`
@@ -248,4 +252,115 @@ export function normalizePageLayout(raw: Partial<PageLayout> | null | undefined)
     if (!seen.has(base.id)) sections.push({ ...base })
   }
   return { sections }
+}
+
+// ─── Secciones nuevas desde plantilla ─────────────────────────────────────────
+
+export const SECTION_TEMPLATES = [
+  { type: 'cta-banner', label: 'Llamada a la acción', desc: 'Título, texto y hasta 2 botones', icon: '📣' },
+  { type: 'menu-grid', label: 'Carta / Menú', desc: 'Tarjetas con foto, nombre, precio y descripción', icon: '🍨' },
+  { type: 'text-block', label: 'Bloque de texto', desc: 'Un título y varios párrafos', icon: '📝' },
+  { type: 'photo-gallery', label: 'Galería de fotos', desc: 'Fotos con pie de imagen', icon: '🖼️' },
+  { type: 'faq', label: 'Preguntas frecuentes', desc: 'Lista de pregunta y respuesta', icon: '❓' },
+] as const
+
+export type SectionTemplateType = (typeof SECTION_TEMPLATES)[number]['type']
+
+export const TEMPLATE_TYPES: SectionTemplateType[] = SECTION_TEMPLATES.map((t) => t.type)
+
+export function isTemplateType(t: string): t is SectionTemplateType {
+  return (TEMPLATE_TYPES as string[]).includes(t)
+}
+
+export interface MenuCard {
+  id: string
+  image: ImageValue
+  name: string
+  price: string
+  description: string
+}
+export interface GalleryPhoto {
+  id: string
+  image: ImageValue
+  caption: string
+}
+export interface TextParagraph {
+  id: string
+  text: string
+}
+export interface FaqItem {
+  id: string
+  question: string
+  answer: string
+}
+
+export interface CtaBannerData {
+  type: 'cta-banner'
+  heading: string
+  description: string
+  buttons: Button[]
+}
+export interface MenuGridData {
+  type: 'menu-grid'
+  heading: string
+  items: MenuCard[]
+}
+export interface TextBlockData {
+  type: 'text-block'
+  heading: string
+  paragraphs: TextParagraph[]
+}
+export interface PhotoGalleryData {
+  type: 'photo-gallery'
+  heading: string
+  images: GalleryPhoto[]
+}
+export interface FaqData {
+  type: 'faq'
+  heading: string
+  items: FaqItem[]
+}
+
+export type DynamicSectionData = CtaBannerData | MenuGridData | TextBlockData | PhotoGalleryData | FaqData
+
+/** id corto y único para tarjetas / fotos / párrafos / preguntas. */
+export function newItemId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `it-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+}
+
+/** Convierte un nombre libre en un slug apto para id/archivo. */
+export function slugify(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+}
+
+/** Estructura vacía de una sección según su plantilla. */
+export function emptyDynamicSection(type: SectionTemplateType): DynamicSectionData {
+  switch (type) {
+    case 'cta-banner':
+      return { type, heading: '', description: '', buttons: [] }
+    case 'menu-grid':
+      return { type, heading: '', items: [] }
+    case 'text-block':
+      return { type, heading: '', paragraphs: [] }
+    case 'photo-gallery':
+      return { type, heading: '', images: [] }
+    case 'faq':
+      return { type, heading: '', items: [] }
+  }
+}
+
+/** Deduce el tipo de plantilla de una sección (por su campo `type`, o por el prefijo del id). */
+export function templateTypeOf(id: string, raw?: { type?: string } | null): SectionTemplateType | null {
+  if (raw?.type && isTemplateType(raw.type)) return raw.type
+  for (const t of TEMPLATE_TYPES) {
+    if (id === t || id.startsWith(`${t}-`)) return t
+  }
+  return null
 }
