@@ -1,16 +1,20 @@
 'use client'
 
-import type { SiteSettingsData } from '@/lib/types'
+import type { LayoutSection, SiteSettingsData } from '@/lib/types'
+import { DEFAULT_PAGE_LAYOUT } from '@/lib/types'
 import EditableText from './editable/EditableText'
 
 interface HeaderProps {
   siteSettings?: SiteSettingsData
+  /** Secciones de la página — el menú se arma con las visibles, en su orden. */
+  sections?: LayoutSection[]
   edit?: boolean
   onChange?: (field: keyof SiteSettingsData, value: string) => void
 }
 
-export default function Header({ siteSettings, edit, onChange }: HeaderProps) {
+export default function Header({ siteSettings, sections, edit, onChange }: HeaderProps) {
   const brandName = siteSettings?.brandName || 'Nieve Artesanal'
+  const navSections = (sections ?? DEFAULT_PAGE_LAYOUT.sections).filter((s) => s.visible && s.id !== 'hero')
 
   return (
     <header
@@ -34,19 +38,17 @@ export default function Header({ siteSettings, edit, onChange }: HeaderProps) {
         placeholder="Nombre de la marca"
         style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 24, color: 'var(--ink)' }}
       />
-      <nav style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-        <a href="#nosotros" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
-          Nosotros
-        </a>
-        <a href="#sabores" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
-          Sabores
-        </a>
-        <a href="#video" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
-          Cómo lo hacemos
-        </a>
-        <a href="#ubicacion" onClick={(e) => edit && e.preventDefault()} style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}>
-          Ubicación
-        </a>
+      <nav style={{ display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {navSections.map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            onClick={(e) => edit && e.preventDefault()}
+            style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}
+          >
+            {s.label}
+          </a>
+        ))}
         <a
           href="#contacto"
           onClick={(e) => edit && e.preventDefault()}

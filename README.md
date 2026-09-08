@@ -52,8 +52,11 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
 - `app/api/admin/` — login, logout, guardado (commit a GitHub vía `lib/github.ts`) y
   `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
 - `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
-- `components/editable/` — `EditableText`, `EditableImage` y `EditableLink`, las piezas reutilizables del editor
+- `components/editable/` — `EditableText` y `EditableImage`, las piezas reutilizables del editor
+- `components/sections/` — piezas compartidas de sección (ej. `SectionButtons`)
 - `content/` — el contenido real del sitio, un JSON por sección
+- `content/pageLayout.json` — orden y visibilidad de las secciones (editable desde
+  «Organizar página» en `/admin`); `app/(site)/page.tsx` renderiza según este archivo
 - `lib/upload.ts` — subida navegador → Cloudinary con barra de progreso (cliente)
 - Las imágenes y el video se sirven desde Cloudinary (folder `nieve-artesanal`). Lo que se
   sube desde `/admin` va directo a Cloudinary; en el JSON solo se guarda la URL pública.

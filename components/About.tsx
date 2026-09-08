@@ -20,7 +20,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
 
   return (
     <section
-      id="nosotros"
+      id="about"
       style={{
         padding: '100px 6vw',
         display: 'grid',

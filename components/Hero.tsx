@@ -19,7 +19,7 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
   if (!data) return null
 
   return (
-    <section id="inicio" style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
+    <section id="hero" style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
       <EditableImage
         src={data.backgroundImage?.src}
         alt={data.backgroundImage?.alt}

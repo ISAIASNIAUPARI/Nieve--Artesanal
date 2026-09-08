@@ -1,0 +1,9 @@
+{
+  "sections": [
+    { "id": "hero", "label": "Portada", "visible": true },
+    { "id": "about", "label": "Nosotros", "visible": true },
+    { "id": "flavors", "label": "Sabores", "visible": true },
+    { "id": "video", "label": "Video", "visible": true },
+    { "id": "location", "label": "Ubicación", "visible": true }
+  ]
+}

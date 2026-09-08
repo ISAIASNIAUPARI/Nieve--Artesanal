@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server'
 import { isValidSessionToken, SESSION_COOKIE } from '@/lib/auth'
 import { commitFiles, type FileChange } from '@/lib/github'
-import { CONTENT_FILES } from '@/lib/types'
+import { CONTENT_FILES, PAGE_LAYOUT_FILE } from '@/lib/types'
 
-const ALLOWED_CONTENT_PATHS = new Set(Object.values(CONTENT_FILES).map((f) => `content/${f}`))
+const ALLOWED_CONTENT_PATHS = new Set([
+  ...Object.values(CONTENT_FILES).map((f) => `content/${f}`),
+  `content/${PAGE_LAYOUT_FILE}`,
+])
+
+/** Secciones dinámicas creadas desde plantillas: content/sections/<id>.json */
+const DYNAMIC_SECTION_PATH = /^content\/sections\/[a-z0-9-]+\.json$/
+
+function isContentPathAllowed(p: string): boolean {
+  return ALLOWED_CONTENT_PATHS.has(p) || DYNAMIC_SECTION_PATH.test(p)
+}
 
 export async function POST(req: Request) {
   const token = req.headers
@@ -28,7 +38,7 @@ export async function POST(req: Request) {
   const images = body.images ?? []
 
   for (const s of sections) {
-    if (!ALLOWED_CONTENT_PATHS.has(s.path)) {
+    if (!isContentPathAllowed(s.path)) {
       return NextResponse.json({ ok: false, error: `Ruta de contenido no permitida: ${s.path}` }, { status: 400 })
     }
   }

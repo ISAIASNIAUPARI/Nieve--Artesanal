@@ -19,13 +19,18 @@ export interface Button {
 
 export const MAX_BUTTONS = 5
 
-/** Anclas de sección disponibles para los botones tipo "Misma página". */
+/**
+ * Anclas de sección disponibles para los botones tipo "Misma página".
+ * El id de cada sección (en pageLayout.json y en el <section id=...>) es el mismo
+ * que aquí sin la almohadilla — así los botones siguen apuntando bien aunque el
+ * cliente reordene las secciones.
+ */
 export const PAGE_ANCHORS: { value: string; label: string }[] = [
-  { value: '#inicio', label: 'Portada' },
-  { value: '#nosotros', label: 'Nosotros' },
-  { value: '#sabores', label: 'Sabores' },
+  { value: '#hero', label: 'Portada' },
+  { value: '#about', label: 'Nosotros' },
+  { value: '#flavors', label: 'Sabores' },
   { value: '#video', label: 'Video' },
-  { value: '#ubicacion', label: 'Ubicación' },
+  { value: '#location', label: 'Ubicación' },
   { value: '#contacto', label: 'Contacto' },
 ]
 
@@ -182,5 +187,65 @@ export function newButton(): Button {
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
       : `btn-${Date.now().toString(36)}`
-  return { id, text: 'Botón nuevo', href: '#inicio', hrefType: 'anchor' }
+  return { id, text: 'Botón nuevo', href: '#hero', hrefType: 'anchor' }
+}
+
+// ─── Distribución de la página (orden y visibilidad de secciones) ──────────────
+
+/** Ids de las secciones base del sitio, en su orden natural. */
+export const BASE_SECTION_IDS = ['hero', 'about', 'flavors', 'video', 'location'] as const
+export type BaseSectionId = (typeof BASE_SECTION_IDS)[number]
+
+/** Mapea el id de sección base a su clave de contenido (para leer el JSON correcto). */
+export const BASE_SECTION_TO_KEY: Record<BaseSectionId, SectionKey> = {
+  hero: 'hero',
+  about: 'about',
+  flavors: 'flavors',
+  video: 'video',
+  location: 'location',
+}
+
+export function isBaseSectionId(id: string): id is BaseSectionId {
+  return (BASE_SECTION_IDS as readonly string[]).includes(id)
+}
+
+export interface LayoutSection {
+  id: string
+  label: string
+  visible: boolean
+}
+
+export interface PageLayout {
+  sections: LayoutSection[]
+}
+
+export const PAGE_LAYOUT_FILE = 'pageLayout.json'
+
+/** Distribución por defecto si aún no existe content/pageLayout.json. */
+export const DEFAULT_PAGE_LAYOUT: PageLayout = {
+  sections: [
+    { id: 'hero', label: 'Portada', visible: true },
+    { id: 'about', label: 'Nosotros', visible: true },
+    { id: 'flavors', label: 'Sabores', visible: true },
+    { id: 'video', label: 'Video', visible: true },
+    { id: 'location', label: 'Ubicación', visible: true },
+  ],
+}
+
+/**
+ * Normaliza una distribución leída de disco: conserva el orden guardado, añade al
+ * final cualquier sección base que falte, y descarta entradas sin id.
+ */
+export function normalizePageLayout(raw: Partial<PageLayout> | null | undefined): PageLayout {
+  const seen = new Set<string>()
+  const sections: LayoutSection[] = []
+  for (const s of raw?.sections ?? []) {
+    if (!s || typeof s.id !== 'string' || seen.has(s.id)) continue
+    seen.add(s.id)
+    sections.push({ id: s.id, label: s.label || s.id, visible: s.visible !== false })
+  }
+  for (const base of DEFAULT_PAGE_LAYOUT.sections) {
+    if (!seen.has(base.id)) sections.push({ ...base })
+  }
+  return { sections }
 }

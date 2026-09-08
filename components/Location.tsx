@@ -18,7 +18,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
 
   return (
     <section
-      id="ubicacion"
+      id="location"
       style={{
         padding: '100px 6vw',
         background: 'var(--ink)',

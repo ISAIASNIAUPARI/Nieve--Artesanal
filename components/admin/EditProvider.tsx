@@ -1,8 +1,15 @@
 'use client'
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import type { Button, HomePageData, MediaUploadStatus, SectionKey } from '@/lib/types'
-import { CONTENT_FILES, SECTION_LABELS, validateButtons } from '@/lib/types'
+import type {
+  Button,
+  HomePageData,
+  LayoutSection,
+  MediaUploadStatus,
+  PageLayout,
+  SectionKey,
+} from '@/lib/types'
+import { CONTENT_FILES, PAGE_LAYOUT_FILE, SECTION_LABELS, validateButtons } from '@/lib/types'
 import { uploadMediaToCloudinary, type MediaKind } from '@/lib/upload'
 
 interface SaveResult {
@@ -10,8 +17,14 @@ interface SaveResult {
   htmlUrl: string
 }
 
+interface SaveFile {
+  path: string
+  json: unknown
+}
+
 interface EditContextValue {
   content: HomePageData
+  layout: PageLayout
   isDirty: boolean
   /** Edita un campo de texto de primer nivel de una sección. */
   setField: (section: SectionKey, field: string, value: string) => void
@@ -19,6 +32,8 @@ interface EditContextValue {
   setObjectField: (section: SectionKey, field: string, prop: string, value: string) => void
   /** Reemplaza el array de botones de una sección (añadir / borrar / reordenar / editar). */
   setButtons: (section: SectionKey, buttons: Button[]) => void
+  /** Reemplaza el orden / visibilidad de las secciones de la página. */
+  setLayoutSections: (sections: LayoutSection[]) => void
   /** Sube una imagen o video a Cloudinary y guarda su URL en el campo indicado. */
   uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<void>
   /** Subidas en curso, por clave `${section}.${field}`. */
@@ -31,9 +46,19 @@ interface EditContextValue {
 
 const EditContext = createContext<EditContextValue | null>(null)
 
-export function EditProvider({ initialContent, children }: { initialContent: HomePageData; children: React.ReactNode }) {
+export function EditProvider({
+  initialContent,
+  initialLayout,
+  children,
+}: {
+  initialContent: HomePageData
+  initialLayout: PageLayout
+  children: React.ReactNode
+}) {
   const [content, setContent] = useState<HomePageData>(initialContent)
+  const [layout, setLayout] = useState<PageLayout>(initialLayout)
   const [dirtySections, setDirtySections] = useState<Set<SectionKey>>(new Set())
+  const [layoutDirty, setLayoutDirty] = useState(false)
   const [uploads, setUploads] = useState<Record<string, MediaUploadStatus>>({})
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -74,6 +99,12 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
     [markDirty]
   )
 
+  const setLayoutSections = useCallback((sections: LayoutSection[]) => {
+    setLayout({ sections })
+    setLayoutDirty(true)
+    setLastSaved(null)
+  }, [])
+
   const uploadMedia = useCallback(
     async (section: SectionKey, field: string, file: File, kind: MediaKind) => {
       const key = `${section}.${field}`
@@ -103,7 +134,7 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
   )
 
   const save = useCallback(async () => {
-    if (dirtySections.size === 0) return
+    if (dirtySections.size === 0 && !layoutDirty) return
 
     // Validación antes de guardar: botones con texto y destino válidos, máx. 5.
     for (const key of dirtySections) {
@@ -117,10 +148,13 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
     setSaving(true)
     setSaveError(null)
     try {
-      const sections = Array.from(dirtySections).map((key) => ({
+      const sections: SaveFile[] = Array.from(dirtySections).map((key) => ({
         path: `content/${CONTENT_FILES[key]}`,
         json: content[key],
       }))
+      if (layoutDirty) {
+        sections.push({ path: `content/${PAGE_LAYOUT_FILE}`, json: layout })
+      }
 
       const res = await fetch('/api/admin/save', {
         method: 'POST',
@@ -133,21 +167,24 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
       }
 
       setDirtySections(new Set())
+      setLayoutDirty(false)
       setLastSaved({ sha: data.sha, htmlUrl: data.htmlUrl })
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Error desconocido al guardar.')
     } finally {
       setSaving(false)
     }
-  }, [content, dirtySections])
+  }, [content, dirtySections, layout, layoutDirty])
 
   const value = useMemo<EditContextValue>(
     () => ({
       content,
-      isDirty: dirtySections.size > 0,
+      layout,
+      isDirty: dirtySections.size > 0 || layoutDirty,
       setField,
       setObjectField,
       setButtons,
+      setLayoutSections,
       uploadMedia,
       uploads,
       saving,
@@ -155,7 +192,22 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
       lastSaved,
       save,
     }),
-    [content, dirtySections, setField, setObjectField, setButtons, uploadMedia, uploads, saving, saveError, lastSaved, save]
+    [
+      content,
+      layout,
+      dirtySections,
+      layoutDirty,
+      setField,
+      setObjectField,
+      setButtons,
+      setLayoutSections,
+      uploadMedia,
+      uploads,
+      saving,
+      saveError,
+      lastSaved,
+      save,
+    ]
   )
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>

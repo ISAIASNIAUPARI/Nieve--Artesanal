@@ -3,8 +3,8 @@
   "heading": "Helado hecho con cariño",
   "description": "Gelato, sorbetes y postres helados elaborados a diario con fruta de temporada, cacao real y crema fresca. Sin mezclas industriales.",
   "buttons": [
-    { "id": "btn-1", "text": "Ver opciones", "href": "#sabores", "hrefType": "anchor" },
-    { "id": "btn-2", "text": "Cómo llegar", "href": "#ubicacion", "hrefType": "anchor" }
+    { "id": "btn-1", "text": "Ver opciones", "href": "#flavors", "hrefType": "anchor" },
+    { "id": "btn-2", "text": "Cómo llegar", "href": "#location", "hrefType": "anchor" }
   ],
   "backgroundImage": {
     "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/hero-vitrina-mix",
