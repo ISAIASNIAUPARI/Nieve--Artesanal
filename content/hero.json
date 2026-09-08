@@ -1,10 +1,10 @@
 {
   "badgeText": "HELADERÍA",
-  "heading": "Helado hecho con amor",
+  "heading": "Helado hecho con cariño",
   "description": "Gelato, sorbetes y postres helados elaborados a diario con fruta de temporada, cacao real y crema fresca. Sin mezclas industriales.",
   "primaryButton": {
     "text": "Ver sabores",
-    "href": "#sabores"
+    "href": "#opciones"
   },
   "secondaryButton": {
     "text": "Cómo llegar",
