@@ -1,6 +1,6 @@
 'use client'
 
-import type { FlavorsSectionData, ImageValue } from '@/lib/types'
+import type { FlavorsSectionData, ImageValue, MediaUploadStatus } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
 
@@ -11,6 +11,7 @@ function Tile({
   style,
   onImageFile,
   onCaptionChange,
+  upload,
 }: {
   image?: ImageValue
   caption?: string
@@ -18,11 +19,12 @@ function Tile({
   style: React.CSSProperties
   onImageFile?: (file: File) => void
   onCaptionChange?: (value: string) => void
+  upload?: MediaUploadStatus
 }) {
   if (!edit && !image?.src) return null
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', ...style }}>
-      <EditableImage src={image?.src} alt={image?.alt} edit={edit} onFile={onImageFile} wrapperStyle={{ width: '100%', height: '100%' }} />
+      <EditableImage src={image?.src} alt={image?.alt} edit={edit} onFile={onImageFile} upload={upload} wrapperStyle={{ width: '100%', height: '100%' }} />
       {(edit || caption) && (
         <div
           style={{
@@ -52,9 +54,10 @@ interface FlavorsProps {
   edit?: boolean
   onChange?: (field: keyof FlavorsSectionData, value: string) => void
   onImageChange?: (field: keyof FlavorsSectionData, file: File) => void
+  uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function Flavors({ data, edit, onChange, onImageChange }: FlavorsProps) {
+export default function Flavors({ data, edit, onChange, onImageChange, uploads }: FlavorsProps) {
   if (!data) return null
 
   return (
@@ -84,6 +87,7 @@ export default function Flavors({ data, edit, onChange, onImageChange }: Flavors
           style={{ gridRow: 'span 2' }}
           onImageFile={(file) => onImageChange?.('featuredImage', file)}
           onCaptionChange={(v) => onChange?.('featuredImageCaption', v)}
+          upload={uploads?.featuredImage}
         />
         <Tile
           image={data.secondaryImage1}
@@ -92,6 +96,7 @@ export default function Flavors({ data, edit, onChange, onImageChange }: Flavors
           style={{ aspectRatio: '4/3' }}
           onImageFile={(file) => onImageChange?.('secondaryImage1', file)}
           onCaptionChange={(v) => onChange?.('secondaryImage1Caption', v)}
+          upload={uploads?.secondaryImage1}
         />
         <Tile
           image={data.secondaryImage2}
@@ -100,6 +105,7 @@ export default function Flavors({ data, edit, onChange, onImageChange }: Flavors
           style={{ aspectRatio: '4/3' }}
           onImageFile={(file) => onImageChange?.('secondaryImage2', file)}
           onCaptionChange={(v) => onChange?.('secondaryImage2Caption', v)}
+          upload={uploads?.secondaryImage2}
         />
       </div>
       {(edit || data.bannerImage?.src) && (
@@ -111,6 +117,7 @@ export default function Flavors({ data, edit, onChange, onImageChange }: Flavors
             style={{ aspectRatio: '21/7' }}
             onImageFile={(file) => onImageChange?.('bannerImage', file)}
             onCaptionChange={(v) => onChange?.('bannerImageCaption', v)}
+            upload={uploads?.bannerImage}
           />
         </div>
       )}

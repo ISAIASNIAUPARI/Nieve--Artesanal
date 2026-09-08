@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import type { VideoSectionData } from '@/lib/types'
+import type { MediaUploadStatus, VideoSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
 
 interface VideoSectionProps {
@@ -9,12 +9,15 @@ interface VideoSectionProps {
   edit?: boolean
   onChange?: (field: keyof VideoSectionData, value: string) => void
   onVideoFile?: (file: File) => void
+  /** Estado de la subida del video en curso (barra de progreso / error). */
+  upload?: MediaUploadStatus
 }
 
-export default function VideoSection({ data, edit, onChange, onVideoFile }: VideoSectionProps) {
+export default function VideoSection({ data, edit, onChange, onVideoFile, upload }: VideoSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoUrl = data?.video?.src
+  const uploading = !!upload && !upload.error
 
   useEffect(() => {
     const video = videoRef.current
@@ -65,11 +68,11 @@ export default function VideoSection({ data, edit, onChange, onVideoFile }: Vide
             borderRadius: 16,
             overflow: 'hidden',
             boxShadow: '0 24px 60px -20px oklch(27% 0.035 45 / 0.267)',
-            cursor: edit ? 'pointer' : undefined,
+            cursor: edit && !uploading ? 'pointer' : undefined,
             minHeight: edit && !videoUrl ? 240 : undefined,
             background: edit && !videoUrl ? '#00000010' : undefined,
           }}
-          onClick={() => edit && fileInputRef.current?.click()}
+          onClick={() => edit && !uploading && fileInputRef.current?.click()}
         >
           {videoUrl ? (
             <video
@@ -89,7 +92,33 @@ export default function VideoSection({ data, edit, onChange, onVideoFile }: Vide
               </div>
             )
           )}
-          {edit && (
+
+          {edit && uploading && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                background: '#000000cc',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                padding: 24,
+              }}
+            >
+              <span>Subiendo video… {upload!.pct}%</span>
+              <div style={{ width: '70%', maxWidth: 320, height: 8, borderRadius: 999, background: '#ffffff33', overflow: 'hidden' }}>
+                <div style={{ width: `${upload!.pct}%`, height: '100%', background: '#fff', transition: 'width .2s' }} />
+              </div>
+              <span style={{ opacity: 0.7, fontWeight: 400, fontSize: 12 }}>Los videos tardan más — no cierres esta pestaña.</span>
+            </div>
+          )}
+
+          {edit && !uploading && (
             <div
               style={{
                 position: 'absolute',
@@ -115,10 +144,29 @@ export default function VideoSection({ data, edit, onChange, onVideoFile }: Vide
               🎬 Cambiar video
             </div>
           )}
+
+          {edit && upload?.error && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                padding: '10px 14px',
+                background: '#c0392b',
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              ⚠ {upload.error}
+            </div>
+          )}
+
           <input
             ref={fileInputRef}
             type="file"
-            accept="video/*"
+            accept="video/mp4,video/quicktime,video/webm"
             style={{ display: 'none' }}
             onChange={(e) => {
               const file = e.target.files?.[0]

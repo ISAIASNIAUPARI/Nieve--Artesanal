@@ -9,7 +9,8 @@ hace commit a GitHub y Vercel redespliega el sitio automáticamente.
 
 ```
 /admin (contraseña) → editar en la página real → Guardar
-        → commit a GitHub (content/*.json + public/images/uploads/*)
+        → imágenes/video suben a Cloudinary al instante
+        → commit a GitHub (content/*.json, con las URLs de Cloudinary)
         → Vercel detecta el push → redeploy (~45-60s)
         → el dominio público muestra el cambio
 ```
@@ -33,6 +34,9 @@ Copia `.env.example` a `.env.local` y completa:
 - `ADMIN_PASSWORD` — contraseña para entrar a `/admin`
 - `GITHUB_TOKEN` — Personal Access Token de GitHub (scope `repo`), solo se usa en el servidor
 - `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANCH` — el repo al que se hace commit al guardar
+- `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` — para subir
+  imágenes y video desde `/admin`. Solo servidor; la clave y el secreto nunca llegan al
+  navegador (la subida se firma en `/api/admin/upload-*` y el archivo va directo a Cloudinary).
 
 En Vercel, configura las mismas variables en Project Settings → Environment Variables
 (las de servidor no llevan `NEXT_PUBLIC_`, así que nunca llegan al navegador).
@@ -45,16 +49,17 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
 
 - `app/(site)/` — sitio público (lee de `/content` vía `lib/content.ts`)
 - `app/admin/` — panel de edición (protegido por `middleware.ts`)
-- `app/api/admin/` — login, logout y guardado (commit a GitHub vía `lib/github.ts`)
+- `app/api/admin/` — login, logout, guardado (commit a GitHub vía `lib/github.ts`) y
+  `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
 - `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
-- `components/editable/` — `EditableText` y `EditableImage`, las piezas reutilizables del editor
+- `components/editable/` — `EditableText`, `EditableImage` y `EditableLink`, las piezas reutilizables del editor
 - `content/` — el contenido real del sitio, un JSON por sección
-- `public/images/` — imágenes; las subidas desde `/admin` caen en `public/images/uploads/`
+- `lib/upload.ts` — subida navegador → Cloudinary con barra de progreso (cliente)
+- Las imágenes y el video se sirven desde Cloudinary (folder `nieve-artesanal`). Lo que se
+  sube desde `/admin` va directo a Cloudinary; en el JSON solo se guarda la URL pública.
 
 ## Limitaciones de este prototipo
 
-- Los enlaces de los botones (`primaryButtonLink`, etc.) no son editables desde `/admin`
-  todavía — se cambian editando el JSON en `content/`.
 - Sin sistema de "deshacer": cada guardado es un commit nuevo, revertir es un `git revert`.
 - Una sola sesión de admin a la vez conceptualmente — no hay bloqueo si dos personas
   editan y guardan al mismo tiempo (el segundo guardado simplemente sobreescribe).

@@ -27,3 +27,21 @@ export async function isValidSessionToken(token: string | undefined | null): Pro
   const expected = await createSessionToken()
   return token === expected
 }
+
+/** Extrae el token de sesión de la cabecera Cookie de una petición entrante. */
+export function readSessionCookie(req: Request): string | undefined {
+  return req.headers
+    .get('cookie')
+    ?.split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${SESSION_COOKIE}=`))
+    ?.split('=')[1]
+}
+
+/**
+ * true si la petición trae una sesión de admin válida. Las rutas /api/admin ya están
+ * cubiertas por middleware.ts, pero cada ruta lo revuelve otra vez (defensa en profundidad).
+ */
+export async function isAdminRequest(req: Request): Promise<boolean> {
+  return isValidSessionToken(readSessionCookie(req))
+}
