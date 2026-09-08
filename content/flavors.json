@@ -21,5 +21,12 @@
     "alt": "Crepe relleno con helado de fresa y salsa de frutos rojos"
   },
   "bannerImageCaption": "Crepe con helado de fresa — nuestro postre firma",
-  "buttons": []
+  "buttons": [
+    {
+      "id": "96723b8f-9c1f-4990-b7fc-f229c924700f",
+      "text": "Link wasap",
+      "href": "#hero",
+      "hrefType": "whatsapp"
+    }
+  ]
 }

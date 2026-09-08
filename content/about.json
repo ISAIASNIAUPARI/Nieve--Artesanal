@@ -7,5 +7,18 @@
     "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/conos-heladeria",
     "alt": "Dos conos de helado frente a la fachada de la heladería"
   },
-  "buttons": []
+  "buttons": [
+    {
+      "id": "280eadc5-83e6-47d5-b8cf-92cb6d640da6",
+      "text": "Botón nuevo",
+      "href": "#hero",
+      "hrefType": "anchor"
+    },
+    {
+      "id": "e8d7774e-78a8-4f39-a771-90d5017ce0ce",
+      "text": "Nuestras preparaciones",
+      "href": "#hero",
+      "hrefType": "anchor"
+    }
+  ]
 }

@@ -5,5 +5,18 @@
   "schedule": "Lunes a domingo · 12:00",
   "phone": "+593 998381419",
   "confirmationMessage": "Gracias, te responderemos pronto.",
-  "buttons": []
+  "buttons": [
+    {
+      "id": "79128536-3c9c-452c-a2ed-4ed85eb729e1",
+      "text": "Botón nuevo",
+      "href": "#hero",
+      "hrefType": "anchor"
+    },
+    {
+      "id": "84521461-a393-4478-a28e-bbd863e17be4",
+      "text": "edificio",
+      "href": "#hero",
+      "hrefType": "anchor"
+    }
+  ]
 }
