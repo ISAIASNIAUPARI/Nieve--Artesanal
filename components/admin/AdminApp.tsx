@@ -12,7 +12,7 @@ import Location from '@/components/Location'
 import Footer from '@/components/Footer'
 
 function AdminSite() {
-  const { content, setField, setObjectField, uploadMedia, uploads } = useEdit()
+  const { content, setField, setButtons, uploadMedia, uploads } = useEdit()
 
   // uploads viene con claves `${section}.${field}`; cada componente quiere solo su sección.
   const sectionUploads = (section: SectionKey): Record<string, MediaUploadStatus> => {
@@ -33,7 +33,7 @@ function AdminSite() {
           data={content.hero}
           edit
           onChange={(field, value) => setField('hero', field, value)}
-          onButtonChange={(field, prop, value) => setObjectField('hero', field, prop, value)}
+          onButtonsChange={(buttons) => setButtons('hero', buttons)}
           onImageChange={(field, file) => uploadMedia('hero', field, file, 'image')}
           uploads={sectionUploads('hero')}
         />
@@ -41,6 +41,7 @@ function AdminSite() {
           data={content.about}
           edit
           onChange={(field, value) => setField('about', field, value)}
+          onButtonsChange={(buttons) => setButtons('about', buttons)}
           onImageChange={(field, file) => uploadMedia('about', field, file, 'image')}
           uploads={sectionUploads('about')}
         />
@@ -48,6 +49,7 @@ function AdminSite() {
           data={content.flavors}
           edit
           onChange={(field, value) => setField('flavors', field, value)}
+          onButtonsChange={(buttons) => setButtons('flavors', buttons)}
           onImageChange={(field, file) => uploadMedia('flavors', field, file, 'image')}
           uploads={sectionUploads('flavors')}
         />
@@ -55,10 +57,16 @@ function AdminSite() {
           data={content.video}
           edit
           onChange={(field, value) => setField('video', field, value)}
+          onButtonsChange={(buttons) => setButtons('video', buttons)}
           onVideoFile={(file) => uploadMedia('video', 'video', file, 'video')}
           upload={uploads['video.video']}
         />
-        <Location data={content.location} edit onChange={(field, value) => setField('location', field, value)} />
+        <Location
+          data={content.location}
+          edit
+          onChange={(field, value) => setField('location', field, value)}
+          onButtonsChange={(buttons) => setButtons('location', buttons)}
+        />
         <Footer siteSettings={content.siteSettings} edit onChange={(field, value) => setField('siteSettings', field, value)} />
       </div>
     </>

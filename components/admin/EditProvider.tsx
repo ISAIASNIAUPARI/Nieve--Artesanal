@@ -1,8 +1,8 @@
 'use client'
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import type { HomePageData, MediaUploadStatus, SectionKey } from '@/lib/types'
-import { CONTENT_FILES } from '@/lib/types'
+import type { Button, HomePageData, MediaUploadStatus, SectionKey } from '@/lib/types'
+import { CONTENT_FILES, SECTION_LABELS, validateButtons } from '@/lib/types'
 import { uploadMediaToCloudinary, type MediaKind } from '@/lib/upload'
 
 interface SaveResult {
@@ -15,8 +15,10 @@ interface EditContextValue {
   isDirty: boolean
   /** Edita un campo de texto de primer nivel de una sección. */
   setField: (section: SectionKey, field: string, value: string) => void
-  /** Edita una propiedad anidada de un objeto (ej. un botón: { text, href }). */
+  /** Edita una propiedad anidada de un objeto (ej. una imagen: { src, alt }). */
   setObjectField: (section: SectionKey, field: string, prop: string, value: string) => void
+  /** Reemplaza el array de botones de una sección (añadir / borrar / reordenar / editar). */
+  setButtons: (section: SectionKey, buttons: Button[]) => void
   /** Sube una imagen o video a Cloudinary y guarda su URL en el campo indicado. */
   uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<void>
   /** Subidas en curso, por clave `${section}.${field}`. */
@@ -64,6 +66,14 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
     [markDirty]
   )
 
+  const setButtons = useCallback(
+    (section: SectionKey, buttons: Button[]) => {
+      setContent((prev) => ({ ...prev, [section]: { ...prev[section], buttons } }))
+      markDirty(section)
+    },
+    [markDirty]
+  )
+
   const uploadMedia = useCallback(
     async (section: SectionKey, field: string, file: File, kind: MediaKind) => {
       const key = `${section}.${field}`
@@ -94,6 +104,16 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
 
   const save = useCallback(async () => {
     if (dirtySections.size === 0) return
+
+    // Validación antes de guardar: botones con texto y destino válidos, máx. 5.
+    for (const key of dirtySections) {
+      const err = validateButtons((content[key] as { buttons?: Button[] }).buttons, SECTION_LABELS[key])
+      if (err) {
+        setSaveError(err)
+        return
+      }
+    }
+
     setSaving(true)
     setSaveError(null)
     try {
@@ -127,6 +147,7 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
       isDirty: dirtySections.size > 0,
       setField,
       setObjectField,
+      setButtons,
       uploadMedia,
       uploads,
       saving,
@@ -134,7 +155,7 @@ export function EditProvider({ initialContent, children }: { initialContent: Hom
       lastSaved,
       save,
     }),
-    [content, dirtySections, setField, setObjectField, uploadMedia, uploads, saving, saveError, lastSaved, save]
+    [content, dirtySections, setField, setObjectField, setButtons, uploadMedia, uploads, saving, saveError, lastSaved, save]
   )
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>

@@ -1,18 +1,21 @@
 'use client'
 
-import type { AboutSectionData, MediaUploadStatus } from '@/lib/types'
+import type { AboutSectionData, Button, MediaUploadStatus } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
+import SectionButtons from './sections/SectionButtons'
+import ButtonsEditor from './admin/ButtonsEditor'
 
 interface AboutProps {
   data?: AboutSectionData
   edit?: boolean
   onChange?: (field: keyof AboutSectionData, value: string) => void
+  onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof AboutSectionData, file: File) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function About({ data, edit, onChange, onImageChange, uploads }: AboutProps) {
+export default function About({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: AboutProps) {
   if (!data) return null
 
   return (
@@ -63,6 +66,10 @@ export default function About({ data, edit, onChange, onImageChange, uploads }: 
           placeholder="Segundo párrafo"
           style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
         />
+        <SectionButtons buttons={data.buttons} tone="light" edit={edit} style={{ marginTop: 28 }} />
+        {edit && onButtonsChange && (
+          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Nosotros" />
+        )}
       </div>
       <EditableImage
         src={data.image?.src}

@@ -4,5 +4,6 @@
   "address": "Av. Principal 245, esquina con Calle Real",
   "schedule": "Lunes a domingo · 12:00",
   "phone": "+593 998381419",
-  "confirmationMessage": "Gracias, te responderemos pronto."
+  "confirmationMessage": "Gracias, te responderemos pronto.",
+  "buttons": []
 }

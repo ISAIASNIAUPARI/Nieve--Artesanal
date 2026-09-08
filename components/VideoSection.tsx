@@ -1,19 +1,22 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import type { MediaUploadStatus, VideoSectionData } from '@/lib/types'
+import type { Button, MediaUploadStatus, VideoSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
+import SectionButtons from './sections/SectionButtons'
+import ButtonsEditor from './admin/ButtonsEditor'
 
 interface VideoSectionProps {
   data?: VideoSectionData
   edit?: boolean
   onChange?: (field: keyof VideoSectionData, value: string) => void
+  onButtonsChange?: (buttons: Button[]) => void
   onVideoFile?: (file: File) => void
   /** Estado de la subida del video en curso (barra de progreso / error). */
   upload?: MediaUploadStatus
 }
 
-export default function VideoSection({ data, edit, onChange, onVideoFile, upload }: VideoSectionProps) {
+export default function VideoSection({ data, edit, onChange, onButtonsChange, onVideoFile, upload }: VideoSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoUrl = data?.video?.src
@@ -174,6 +177,12 @@ export default function VideoSection({ data, edit, onChange, onVideoFile, upload
               e.target.value = ''
             }}
           />
+        </div>
+      )}
+      <SectionButtons buttons={data.buttons} tone="light" edit={edit} align="center" style={{ marginTop: 40 }} />
+      {edit && onButtonsChange && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Video" />
         </div>
       )}
     </section>
