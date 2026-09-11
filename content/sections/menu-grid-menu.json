@@ -6,24 +6,24 @@
     {
       "id": "759da00f-eb75-4147-845a-03975b37ac33",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/v65a2jakl0ddxerf1yv2",
-        "focalX": 55,
-        "focalY": 32
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/y3lm6uao4dsquurd6kp3",
+        "focalX": 80,
+        "focalY": 19
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Chocolate Artesanal",
+      "price": "$2.50",
+      "description": "Cremoso helado de chocolate con intenso sabor a cacao."
     },
     {
       "id": "2f327612-0544-4b2a-a2c8-a1dfdf5efabf",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/xa3jlgmktbaczravuopg",
-        "focalX": 70,
-        "focalY": 25
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/wxdymzrs90qrn0gqhdbx",
+        "focalX": 66,
+        "focalY": 20
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Vainilla Clásica",
+      "price": "$2.50",
+      "description": "Cremoso helado de chocolate con"
     },
     {
       "id": "ba660ea1-f6c1-4df3-8309-a3c4a78268c3",
@@ -32,9 +32,9 @@
         "focalX": 72,
         "focalY": 35
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Vainilla Clásica",
+      "price": "$2.75",
+      "description": "Suave y cremosa, elaborada con un delicado toque de vainilla."
     },
     {
       "id": "e36ba1c0-b4f6-4ec6-8061-cc76b0485f20",
@@ -43,18 +43,18 @@
         "focalX": 67,
         "focalY": 6
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Fresa Natural",
+      "price": "$2.50",
+      "description": "Helado cremoso con el sabor fresco y dulce de la fresa."
     },
     {
       "id": "6be48949-eec1-4cbf-a417-c9deed2d7a2f",
       "image": {
         "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/fjm3jsawvuvhdkkoztwj"
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Pistacho Premium",
+      "price": "$2.75",
+      "description": "Cremoso helado de pistacho con un delicado sabor tostado."
     },
     {
       "id": "e70eaec3-0a5b-4a3c-8007-6aa99b5d7a33",
@@ -63,9 +63,9 @@
         "focalX": 50,
         "focalY": 50
       },
-      "name": "",
-      "price": "",
-      "description": ""
+      "name": "Mango Tropical",
+      "price": "$2.75",
+      "description": "Refrescante combinación de mango maduro y textura cremosa."
     }
   ]
 }
