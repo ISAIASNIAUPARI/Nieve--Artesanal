@@ -46,12 +46,12 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
       />
       {/* Hijo normal (no position:absolute) del <section> flex — así el contenido
           SIGUE DICTANDO el alto de la sección cuando es más alto que minHeight:88vh
-          (pasa en edición: el panel de botones/zona móvil puede ser bien largo). Con
+          (pasa en edición: el panel de botones puede ser bien largo). Con
           position:absolute+inset:0 el contenido queda "atrapado" en un alto fijo y
           se desborda simétricamente hacia arriba/abajo — el título terminaba
-          empujado fuera de la pantalla, por encima del hero. Los botones con zona
-          móvil (mobileZone) igual bubblean hasta este <section> (position:relative)
-          porque este wrapper no fija su propio position. */}
+          empujado fuera de la pantalla, por encima del hero. El canvas de posición
+          libre de los botones (SectionButtons) igual bubblea hasta este <section>
+          (position:relative) porque este wrapper no fija su propio position. */}
       <div
         style={{
           zIndex: 2,

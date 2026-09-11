@@ -1,7 +1,7 @@
 'use client'
 
-import type { Button, HrefType, MobileZone } from '@/lib/types'
-import { MAX_BUTTONS, MOBILE_ZONES, PAGE_ANCHORS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
+import type { Button, HrefType } from '@/lib/types'
+import { MAX_BUTTONS, PAGE_ANCHORS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -126,6 +126,9 @@ export default function ButtonsEditor({
       >
         Botones de «{sectionLabel}» ({buttons.length}/{max})
       </strong>
+      <span style={{ fontSize: mobileMode ? 10 : 11, opacity: 0.55 }}>
+        Arrastra un botón en la vista previa de arriba para moverlo libremente — {mobileMode ? 'la posición en móvil' : 'la posición en desktop'} se guarda aparte.
+      </span>
 
       {buttons.length === 0 && <span style={{ opacity: 0.6 }}>Esta sección no tiene botones.</span>}
 
@@ -164,65 +167,6 @@ export default function ButtonsEditor({
       >
         + Añadir botón
       </button>
-    </div>
-  )
-}
-
-const ZONE_SQUARE = 16
-const ZONE_GAP = 3
-/** Ancho total de la fila de 3 (arriba) — la fila de 2 (abajo) se ajusta a este mismo ancho. */
-const ZONE_ROW_WIDTH = ZONE_SQUARE * 3 + ZONE_GAP * 2
-
-const zoneBtn = (active: boolean): React.CSSProperties => ({
-  width: ZONE_SQUARE,
-  height: ZONE_SQUARE,
-  borderRadius: 3,
-  border: `1px solid ${active ? 'var(--accent)' : '#ffffff3b'}`,
-  background: active ? 'var(--accent)' : '#ffffff12',
-  cursor: 'pointer',
-  padding: 0,
-})
-
-const zoneOf = (value: MobileZone) => MOBILE_ZONES.find((z) => z.value === value)!
-
-/**
- * Selector compacto de zona: 3 cuadrados arriba (izq/centro/der) + 2 abajo (izq/der),
- * mismo ancho total que la fila de arriba — discreto, sin caja ni fondo grande detrás.
- * Clic de nuevo sobre la zona ya elegida la quita (vuelve al apilado normal).
- * Tamaño fijo (no se achica en `mobileMode`) — ya está bien de tamaño.
- */
-function MobileZonePicker({ value, onChange }: { value?: MobileZone; onChange: (zone: MobileZone | undefined) => void }) {
-  const top = MOBILE_ZONES.slice(0, 3)
-  const bottom = MOBILE_ZONES.slice(3)
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <span style={{ opacity: 0.7 }}>Zona en móvil</span>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: ZONE_GAP, width: ZONE_ROW_WIDTH }}>
-        <div style={{ display: 'flex', gap: ZONE_GAP }}>
-          {top.map((z) => (
-            <button
-              key={z.value}
-              type="button"
-              title={z.label}
-              onClick={() => onChange(value === z.value ? undefined : z.value)}
-              style={zoneBtn(value === z.value)}
-            />
-          ))}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {bottom.map((z) => (
-            <button
-              key={z.value}
-              type="button"
-              title={z.label}
-              onClick={() => onChange(value === z.value ? undefined : z.value)}
-              style={zoneBtn(value === z.value)}
-            />
-          ))}
-        </div>
-      </div>
-      <span style={{ fontSize: 11, opacity: 0.55 }}>{value ? zoneOf(value).label : 'Sin zona — apilado normal'}</span>
     </div>
   )
 }
@@ -383,10 +327,6 @@ function SortableButtonRow({
         )}
         {hrefError && <span style={{ color: '#ff8a8a', fontSize: 11 }}>Falta el destino o no está permitido.</span>}
       </label>
-
-      {mobileMode && (
-        <MobileZonePicker value={b.mobileZone} onChange={(zone) => onUpdate({ mobileZone: zone })} />
-      )}
     </div>
   )
 }
