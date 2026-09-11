@@ -5,20 +5,20 @@
     {
       "id": "4e8a8c26-2499-401d-b3c7-1497492e1659",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/tanaeolca8fihngrmj6x",
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/jnybtkkcmxwhwdtumpu9",
         "focalX": 50,
         "focalY": 50
       },
-      "caption": ""
+      "caption": "Samanta"
     },
     {
       "id": "0cf81538-a135-4cfc-b25c-007af8dec72f",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/dgwuzqcostfddfyvdw5g",
-        "focalX": 45,
-        "focalY": 44
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/vrpw1guo2vxsybxeuewv",
+        "focalX": 44,
+        "focalY": 42
       },
-      "caption": ""
+      "caption": "Socios"
     },
     {
       "id": "a6ebf04e-edf6-408e-a17c-46d5bb382542",
@@ -27,7 +27,7 @@
         "focalX": 64,
         "focalY": 32
       },
-      "caption": ""
+      "caption": "Andrés"
     },
     {
       "id": "dfffebec-fd52-47a0-84b3-fc93e162c3f0",
@@ -36,7 +36,7 @@
         "focalX": 74,
         "focalY": 50
       },
-      "caption": ""
+      "caption": "Equipo"
     }
   ]
 }
