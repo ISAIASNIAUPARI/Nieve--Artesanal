@@ -161,8 +161,14 @@ export interface LocationSectionData {
   schedule?: string
   phone?: string
   email?: string
-  /** Link de Google Maps (corto o largo) — arma el mapa embebido y el botón "Abrir en Maps". */
+  /** Link del botón "Abrir en Maps" — tal cual lo comparte Google Maps (puede ser corto). */
   mapUrl?: string
+  /**
+   * Link CON coordenadas ("...@lat,lng...", el formato largo de Google Maps) usado solo
+   * para armar el mapa embebido — un link corto (maps.app.goo.gl/...) no trae coordenadas
+   * en su propio texto, así que no sirve para esto. Sin edición desde el panel a propósito.
+   */
+  mapEmbedUrl?: string
   buttons?: Button[]
 }
 

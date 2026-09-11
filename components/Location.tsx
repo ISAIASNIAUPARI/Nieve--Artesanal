@@ -20,13 +20,15 @@ interface LocationProps {
 }
 
 /**
- * Src del mapa embebido, sin API key de Google: si `mapUrl` trae coordenadas
- * "@lat,lng" (el formato normal de cualquier link de Google Maps), se arma el
- * embed directo sobre ese punto; si no, se busca por el texto de `address`.
- * Sin ninguno de los dos, no hay mapa que mostrar.
+ * Src del mapa embebido, sin API key de Google: si `mapEmbedUrl` trae coordenadas
+ * "@lat,lng" (el formato largo de un link de Google Maps), se arma el embed directo
+ * sobre ese punto; si no, se busca por el texto de `address`. Sin ninguno de los
+ * dos, no hay mapa que mostrar. Nota: `mapUrl` (el del botón "Abrir en Maps") NO
+ * sirve para esto — suele ser un link corto (maps.app.goo.gl/...) sin coordenadas
+ * en su propio texto.
  */
-function mapEmbedSrc(mapUrl?: string, address?: string): string | null {
-  const coords = mapUrl?.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+function mapEmbedSrc(mapEmbedUrl?: string, address?: string): string | null {
+  const coords = mapEmbedUrl?.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
   if (coords) return `https://www.google.com/maps?q=${coords[1]},${coords[2]}&z=16&output=embed`
   if (address?.trim()) return `https://www.google.com/maps?q=${encodeURIComponent(address.trim())}&output=embed`
   return null
@@ -51,7 +53,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
   const isMobile = useIsMobileView()
   if (!data) return null
 
-  const mapSrc = mapEmbedSrc(data.mapUrl, data.address)
+  const mapSrc = mapEmbedSrc(data.mapEmbedUrl, data.address)
 
   return (
     <>
@@ -160,7 +162,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
                   background: '#ffffff08',
                 }}
               >
-                Agrega una dirección arriba, o un link de Google Maps abajo, para mostrar el mapa.
+                Agrega una dirección arriba para mostrar el mapa.
               </div>
             )}
             {data.mapUrl?.trim() && (
@@ -187,24 +189,6 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
               </a>
             )}
           </div>
-        )}
-        {edit && (
-          <input
-            value={data.mapUrl ?? ''}
-            onChange={(e) => onChange?.('mapUrl', e.target.value)}
-            placeholder="Link de Google Maps (mapa y botón «Abrir en Maps»)"
-            style={{
-              marginTop: 8,
-              width: '100%',
-              padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid #ffffff33',
-              background: '#ffffff12',
-              color: '#fff',
-              fontSize: 12,
-              fontFamily: 'inherit',
-            }}
-          />
         )}
 
         <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
