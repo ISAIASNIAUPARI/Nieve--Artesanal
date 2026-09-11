@@ -43,6 +43,12 @@ export default function EditableText({
   const ref = useRef<HTMLElement>(null)
   const focused = useRef(false)
   const restingOutlineColor = alwaysShowOutline ? '#3b82f688' : '#ffffff00'
+  // Por defecto, en edición cada tag se comporta como se comportaría normalmente en HTML:
+  // los de bloque (h1/h2/h3/p/div) ocupan toda la línea y fuerzan el salto de línea del
+  // elemento siguiente, igual que en el sitio público; span/strong (etiquetas cortas,
+  // badges, botones) se quedan inline-block para que el contorno de foco no se estire de
+  // borde a borde. Si el caller fija su propio `style.display`, eso manda siempre.
+  const defaultDisplay = Tag === 'span' || Tag === 'strong' ? 'inline-block' : 'block'
 
   useLayoutEffect(() => {
     if (!edit) return
@@ -95,7 +101,7 @@ export default function EditableText({
         transition: 'outline-color .15s, background-color .15s',
         minWidth: 24,
         minHeight: '1em',
-        display: style?.display || 'inline-block',
+        display: style?.display || defaultDisplay,
       }}
     />
   )
