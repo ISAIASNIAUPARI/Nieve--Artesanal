@@ -34,6 +34,11 @@
       "id": "location",
       "label": "Ubicación",
       "visible": true
+    },
+    {
+      "id": "text-block-texto",
+      "label": "TEXTO",
+      "visible": true
     }
   ]
 }
