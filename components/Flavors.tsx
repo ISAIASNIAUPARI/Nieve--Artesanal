@@ -82,6 +82,7 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
   if (!data) return null
 
   return (
+    <>
     <section id="flavors" style={{ position: 'relative', padding: isMobile ? '20px 20px 48px' : '20px 6vw 100px' }}>
       <div style={{ textAlign: 'center', maxWidth: 600, margin: isMobile ? '0 auto 32px' : '0 auto 56px' }}>
         <EditableText
@@ -164,11 +165,12 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
         </div>
       )}
       <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} align="center" style={{ marginTop: 44 }} />
-      {edit && onButtonsChange && !isMobile && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Sabores" />
-        </div>
-      )}
     </section>
+    {edit && onButtonsChange && !isMobile && (
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Sabores" />
+      </div>
+    )}
+    </>
   )
 }

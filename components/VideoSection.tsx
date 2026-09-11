@@ -83,6 +83,7 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
   if (!data) return null
 
   return (
+    <>
     <section id="video" style={{ position: 'relative', padding: isMobile ? '20px 20px 48px' : '20px 6vw 100px' }}>
       <div style={{ textAlign: 'center', maxWidth: 600, margin: isMobile ? '0 auto 24px' : '0 auto 40px' }}>
         <EditableText
@@ -299,11 +300,12 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
         </div>
       )}
       <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} align="center" style={{ marginTop: 40 }} />
-      {edit && onButtonsChange && !isMobile && (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Video" />
-        </div>
-      )}
     </section>
+    {edit && onButtonsChange && !isMobile && (
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Video" />
+      </div>
+    )}
+    </>
   )
 }

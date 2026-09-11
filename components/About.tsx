@@ -22,6 +22,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
   if (!data) return null
 
   return (
+    <>
     <section
       id="about"
       style={{
@@ -72,9 +73,6 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
           style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
         />
         <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
-        {edit && onButtonsChange && !isMobile && (
-          <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Nosotros" />
-        )}
       </div>
       <EditableImage
         src={data.image?.src}
@@ -89,5 +87,9 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
         wrapperStyle={{ width: '100%', borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
       />
     </section>
+    {edit && onButtonsChange && !isMobile && (
+      <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Nosotros" />
+    )}
+    </>
   )
 }

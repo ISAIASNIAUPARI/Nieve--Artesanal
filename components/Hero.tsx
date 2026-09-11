@@ -22,6 +22,7 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
   if (!data) return null
 
   return (
+    <>
     <section id="hero" style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
       <EditableImage
         src={data.backgroundImage?.src}
@@ -108,11 +109,16 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
             }}
           />
           <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} />
-          {edit && onButtonsChange && !isMobile && (
-            <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Portada" />
-          )}
         </div>
       </div>
     </section>
+    {/* Fuera del <section> a propósito — si viviera adentro, el panel (que crece
+        con cada botón agregado) inflaría el alto de la sección, y como el canvas
+        de posición libre mide sus % contra ESE alto, los botones ya colocados se
+        verían "correr" cada vez que el panel cambia de tamaño. Ver Fase D, Parte 8. */}
+    {edit && onButtonsChange && !isMobile && (
+      <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Portada" />
+    )}
+    </>
   )
 }

@@ -14,62 +14,67 @@ const TYPE_LABELS: Record<HrefType, string> = {
   phone: 'Teléfono',
 }
 
-/**
- * El panel es compacto por defecto (ya lo era demasiado grande antes) y se vuelve
- * un escalón más chico todavía cuando el admin está en la vista previa móvil
- * (`mobileMode`) — ahí compite por espacio con el frame de 390px y no debe tapar
- * la sección que se está previsualizando.
- */
-const boxStyle = (mobileMode: boolean): React.CSSProperties => ({
+// Este panel solo se muestra en desktop (en móvil solo se arrastra la posición
+// en la vista previa — ver SectionButtons.tsx), así que ya no necesita una
+// variante "mobileMode": un solo juego de tamaños, chico a propósito — el
+// cliente lo pidió "dos veces más pequeño" que la versión anterior.
+const box: React.CSSProperties = {
   fontFamily: 'system-ui, sans-serif',
-  fontSize: mobileMode ? 11 : 12,
+  fontSize: 10,
   color: '#fff',
   background: '#0000008c',
   border: '1px solid #ffffff2b',
-  borderRadius: 10,
-  padding: mobileMode ? 8 : 10,
+  borderRadius: 8,
+  padding: 5,
   margin: '18px 0 0',
   display: 'flex',
   flexDirection: 'column',
-  gap: mobileMode ? 6 : 8,
-  maxWidth: 520,
+  gap: 4,
+  maxWidth: 380,
   textAlign: 'left',
-})
+}
 
-const fieldStyle = (mobileMode: boolean): React.CSSProperties => ({
-  padding: mobileMode ? '4px 7px' : '5px 8px',
-  borderRadius: 7,
+const field: React.CSSProperties = {
+  padding: '3px 5px',
+  borderRadius: 5,
   border: '1px solid #ffffff3b',
   background: '#00000066',
   color: '#fff',
-  fontSize: mobileMode ? 11 : 12,
+  fontSize: 10,
   fontFamily: 'inherit',
   width: '100%',
-})
+}
 
-const iconBtn = (enabled: boolean, mobileMode: boolean): React.CSSProperties => ({
+const iconBtn = (enabled: boolean): React.CSSProperties => ({
   border: '1px solid #ffffff3b',
   background: enabled ? '#ffffff17' : '#ffffff08',
   color: enabled ? '#fff' : '#ffffff55',
-  borderRadius: 7,
-  width: mobileMode ? 22 : 26,
-  height: mobileMode ? 22 : 26,
+  borderRadius: 5,
+  width: 18,
+  height: 18,
   cursor: enabled ? 'pointer' : 'default',
-  fontSize: mobileMode ? 11 : 12,
+  fontSize: 10,
   lineHeight: 1,
 })
 
 /**
- * Editor de la barra de botones de una sección (0 a 5 botones).
+ * Editor de la barra de botones de una sección (0 a 5 botones). Solo se
+ * renderiza en desktop — ver los 6 componentes que lo llaman (Hero, About,
+ * Flavors, VideoSection, Location, CtaBanner): el `<ButtonsEditor>` vive
+ * FUERA del `<section>`, no adentro. Si viviera adentro, el panel (que crece
+ * cada vez que se agrega un botón) inflaría el alto de la sección, y como el
+ * canvas de posición libre de SectionButtons mide sus % contra ESE alto, los
+ * botones ya colocados se "correrían" cada vez que el panel cambia de tamaño
+ * — eso rompía la vista previa (ver Fase D, Parte 8 en Obsidian).
+ *
  * Es "controlado": recibe `buttons` y llama `onChange` con el array nuevo
  * (añadir, borrar, reordenar, editar). El commit al JSON lo hace "Guardar".
  *
- * El reorden tiene dos caminos, ambos terminan en el mismo `onChange(next)`:
- * las flechas ↑↓ de siempre, y arrastrar la tarjeta desde su asa (⠿). El
- * arrastre usa dnd-kit con el "drag handle" en un elemento aparte — no en la
- * tarjeta completa — para que seguir pudiendo hacer clic y seleccionar texto
- * dentro de los campos (texto, destino) sin que se interprete como un intento
- * de arrastre.
+ * El reorden (que decide cuál es Primario/Secundario/Terciario, para el
+ * estilo) tiene dos caminos, ambos terminan en el mismo `onChange(next)`: las
+ * flechas ↑↓ de siempre, y arrastrar la tarjeta desde su asa (⠿). La posición
+ * VISUAL del botón (dónde aparece en la página) es otra cosa aparte — se
+ * arrastra directo en la vista previa (SectionButtons.tsx), no aquí.
  */
 export default function ButtonsEditor({
   buttons,
@@ -82,8 +87,7 @@ export default function ButtonsEditor({
   sectionLabel: string
   max?: number
 }) {
-  const { viewMode, layout } = useEdit()
-  const mobileMode = viewMode === 'mobile'
+  const { layout } = useEdit()
   // Nº. Nombre, en el orden real que tiene ahora mismo "Organizar página" — no una
   // lista fija: si el cliente reordena o renombra una sección ahí, el dropdown de
   // Destino lo refleja solo. "Contacto" no es una sección de layout.sections (es el
@@ -123,19 +127,12 @@ export default function ButtonsEditor({
   }
 
   return (
-    <div style={boxStyle(mobileMode)} onClick={(e) => e.stopPropagation()}>
-      <strong
-        style={{
-          fontSize: mobileMode ? 10 : 11,
-          opacity: 0.7,
-          textTransform: 'uppercase',
-          letterSpacing: '.05em',
-        }}
-      >
+    <div style={box} onClick={(e) => e.stopPropagation()}>
+      <strong style={{ fontSize: 9, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '.05em' }}>
         Botones de «{sectionLabel}» ({buttons.length}/{max})
       </strong>
-      <span style={{ fontSize: mobileMode ? 10 : 11, opacity: 0.55 }}>
-        Arrastra un botón en la vista previa de arriba para moverlo libremente — {mobileMode ? 'la posición en móvil' : 'la posición en desktop'} se guarda aparte.
+      <span style={{ fontSize: 9, opacity: 0.55 }}>
+        Arrastra un botón en la vista previa de arriba para moverlo libremente.
       </span>
 
       {buttons.length === 0 && <span style={{ opacity: 0.6 }}>Esta sección no tiene botones.</span>}
@@ -148,7 +145,6 @@ export default function ButtonsEditor({
               button={b}
               index={i}
               total={buttons.length}
-              mobileMode={mobileMode}
               anchorOptions={anchorOptions}
               onUpdate={(patch) => update(b.id, patch)}
               onRemove={() => remove(b.id)}
@@ -164,12 +160,12 @@ export default function ButtonsEditor({
         disabled={buttons.length >= max}
         style={{
           alignSelf: 'flex-start',
-          padding: mobileMode ? '5px 10px' : '6px 12px',
+          padding: '4px 8px',
           borderRadius: 999,
           border: '1px dashed #ffffff55',
           background: 'transparent',
           color: buttons.length >= max ? '#ffffff55' : '#fff',
-          fontSize: mobileMode ? 11 : 12,
+          fontSize: 10,
           fontWeight: 600,
           cursor: buttons.length >= max ? 'default' : 'pointer',
         }}
@@ -184,7 +180,6 @@ function SortableButtonRow({
   button: b,
   index: i,
   total,
-  mobileMode,
   anchorOptions,
   onUpdate,
   onRemove,
@@ -193,7 +188,6 @@ function SortableButtonRow({
   button: Button
   index: number
   total: number
-  mobileMode: boolean
   anchorOptions: { value: string; label: string }[]
   onUpdate: (patch: Partial<Button>) => void
   onRemove: () => void
@@ -203,7 +197,6 @@ function SortableButtonRow({
 
   const textError = !b.text?.trim()
   const hrefError = !b.href?.trim() || !isSafeHref(b.href)
-  const field = fieldStyle(mobileMode)
 
   return (
     <div
@@ -216,14 +209,14 @@ function SortableButtonRow({
         zIndex: isDragging ? 1 : 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: mobileMode ? 5 : 6,
-        padding: mobileMode ? 6 : 7,
-        borderRadius: 8,
+        gap: 3,
+        padding: 4,
+        borderRadius: 6,
         background: '#ffffff0f',
         border: '1px solid #ffffff1f',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <span
           {...attributes}
           {...listeners}
@@ -231,7 +224,7 @@ function SortableButtonRow({
           style={{
             cursor: isDragging ? 'grabbing' : 'grab',
             color: '#ffffff88',
-            fontSize: mobileMode ? 11 : 13,
+            fontSize: 10,
             padding: '0 2px',
             touchAction: 'none',
             userSelect: 'none',
@@ -239,22 +232,16 @@ function SortableButtonRow({
         >
           ⠿
         </span>
-        <span style={{ opacity: 0.5, fontSize: mobileMode ? 10 : 11, minWidth: mobileMode ? 46 : 50 }}>
+        <span style={{ opacity: 0.5, fontSize: 9, minWidth: 38 }}>
           {i === 0 ? 'Primario' : i === 1 ? 'Secundario' : `Terciario`}
         </span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-          <button
-            type="button"
-            style={iconBtn(i > 0, mobileMode)}
-            onClick={() => onMove(-1)}
-            title="Subir"
-            disabled={i === 0}
-          >
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 3 }}>
+          <button type="button" style={iconBtn(i > 0)} onClick={() => onMove(-1)} title="Subir" disabled={i === 0}>
             ↑
           </button>
           <button
             type="button"
-            style={iconBtn(i < total - 1, mobileMode)}
+            style={iconBtn(i < total - 1)}
             onClick={() => onMove(1)}
             title="Bajar"
             disabled={i === total - 1}
@@ -263,7 +250,7 @@ function SortableButtonRow({
           </button>
           <button
             type="button"
-            style={{ ...iconBtn(true, mobileMode), borderColor: '#ff8a8a55', color: '#ff8a8a' }}
+            style={{ ...iconBtn(true), borderColor: '#ff8a8a55', color: '#ff8a8a' }}
             onClick={onRemove}
             title="Eliminar"
           >
@@ -272,8 +259,8 @@ function SortableButtonRow({
         </div>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Texto</span>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ opacity: 0.7, fontSize: 10 }}>Texto</span>
         <input
           style={{ ...field, borderColor: textError ? '#ff8a8a' : '#ffffff3b' }}
           value={b.text}
@@ -281,8 +268,8 @@ function SortableButtonRow({
         />
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Tipo de destino</span>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ opacity: 0.7, fontSize: 10 }}>Tipo de destino</span>
         <select style={field} value={b.hrefType} onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType })}>
           {(Object.keys(TYPE_LABELS) as HrefType[]).map((t) => (
             <option key={t} value={t} style={{ color: '#000' }}>
@@ -292,8 +279,8 @@ function SortableButtonRow({
         </select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Destino</span>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ opacity: 0.7, fontSize: 10 }}>Destino</span>
         {b.hrefType === 'anchor' ? (
           <select
             style={{ ...field, borderColor: hrefError ? '#ff8a8a' : ('#ffffff3b') }}
@@ -334,9 +321,9 @@ function SortableButtonRow({
           />
         )}
         {(b.hrefType === 'whatsapp' || b.hrefType === 'phone') && b.href.trim() && (
-          <span style={{ opacity: 0.55, fontSize: 11 }}>→ {resolveButtonHref(b)}</span>
+          <span style={{ opacity: 0.55, fontSize: 9 }}>→ {resolveButtonHref(b)}</span>
         )}
-        {hrefError && <span style={{ color: '#ff8a8a', fontSize: 11 }}>Falta el destino o no está permitido.</span>}
+        {hrefError && <span style={{ color: '#ff8a8a', fontSize: 9 }}>Falta el destino o no está permitido.</span>}
       </label>
     </div>
   )
