@@ -26,7 +26,9 @@
       "id": "96723b8f-9c1f-4990-b7fc-f229c924700f",
       "text": "Link wasap",
       "href": "#hero",
-      "hrefType": "whatsapp"
+      "hrefType": "whatsapp",
+      "mobileX": 27.967934021975267,
+      "mobileY": 95.65154367400345
     }
   ]
 }

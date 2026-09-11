@@ -10,13 +10,17 @@
       "id": "79128536-3c9c-452c-a2ed-4ed85eb729e1",
       "text": "Botón nuevo",
       "href": "#hero",
-      "hrefType": "anchor"
+      "hrefType": "anchor",
+      "mobileX": 55.13370289522059,
+      "mobileY": 94.03336882985829
     },
     {
       "id": "84521461-a393-4478-a28e-bbd863e17be4",
       "text": "edificio",
       "href": "#hero",
-      "hrefType": "anchor"
+      "hrefType": "anchor",
+      "mobileX": 12.754007431275067,
+      "mobileY": 93.93523490186645
     }
   ]
 }
