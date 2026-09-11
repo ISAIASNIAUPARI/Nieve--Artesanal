@@ -1,33 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import type { Button, MobileZone } from '@/lib/types'
 import { resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useEditOptional } from '../admin/EditProvider'
+import { useIsMobileView } from '../useIsMobileView'
 
 type Tone = 'light' | 'dark' | 'onAccent'
-
-const MOBILE_BREAKPOINT = '(max-width: 768px)'
-
-/**
- * true en pantallas ≤768px del navegador real — para el sitio público. Dentro del
- * admin, `viewMode` (EditProvider) manda por encima de esto para poder previsualizar
- * la vista móvil en un frame de escritorio sin depender del ancho real de la ventana.
- */
-function useIsMobileViewport() {
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia(MOBILE_BREAKPOINT)
-    const update = () => setIsMobile(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  return isMobile
-}
 
 const ZONE_POSITION: Record<MobileZone, React.CSSProperties> = {
   'top-left': { top: 16, left: 16 },
@@ -76,9 +56,7 @@ export default function SectionButtons({
   style?: React.CSSProperties
   onReorder?: (buttons: Button[]) => void
 }) {
-  const editCtx = useEditOptional()
-  const autoMobile = useIsMobileViewport()
-  const isMobile = editCtx ? editCtx.viewMode === 'mobile' : autoMobile
+  const isMobile = useIsMobileView()
 
   const all = buttons || []
   const list = all.filter((b) => b.text?.trim() && b.href?.trim())

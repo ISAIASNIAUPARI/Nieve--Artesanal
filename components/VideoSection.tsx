@@ -6,6 +6,7 @@ import EditableText from './editable/EditableText'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
 import { useEditOptional } from './admin/EditProvider'
+import { useIsMobileView } from './useIsMobileView'
 
 interface VideoSectionProps {
   data?: VideoSectionData
@@ -34,6 +35,7 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
   // público este hook devuelve null y la zona de drop simplemente no se pinta.
   const editCtx = useEditOptional()
   const dropZoneActive = editCtx?.isDraggingFile === 'video'
+  const isMobile = useIsMobileView()
 
   useEffect(() => {
     return () => {
@@ -81,8 +83,8 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
   if (!data) return null
 
   return (
-    <section id="video" style={{ position: 'relative', padding: '20px 6vw 100px' }}>
-      <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 40px' }}>
+    <section id="video" style={{ position: 'relative', padding: isMobile ? '20px 20px 48px' : '20px 6vw 100px' }}>
+      <div style={{ textAlign: 'center', maxWidth: 600, margin: isMobile ? '0 auto 24px' : '0 auto 40px' }}>
         <EditableText
           edit={edit}
           value={data.eyebrow}
@@ -96,7 +98,13 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
           value={data.heading}
           onChange={(v) => onChange?.('heading', v)}
           placeholder="Título de la sección"
-          style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 'clamp(28px,3.5vw,42px)', margin: '12px 0 0', color: 'var(--ink)' }}
+          style={{
+            fontFamily: 'var(--font-dm-serif), serif',
+            fontSize: isMobile ? 26 : 'clamp(28px,3.5vw,42px)',
+            lineHeight: 1.2,
+            margin: '12px 0 0',
+            color: 'var(--ink)',
+          }}
         />
       </div>
       {(edit || videoUrl) && (

@@ -5,6 +5,7 @@ import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
+import { useIsMobileView } from './useIsMobileView'
 
 function Tile({
   image,
@@ -77,11 +78,12 @@ interface FlavorsProps {
 }
 
 export default function Flavors({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: FlavorsProps) {
+  const isMobile = useIsMobileView()
   if (!data) return null
 
   return (
-    <section id="flavors" style={{ position: 'relative', padding: '20px 6vw 100px' }}>
-      <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 56px' }}>
+    <section id="flavors" style={{ position: 'relative', padding: isMobile ? '20px 20px 48px' : '20px 6vw 100px' }}>
+      <div style={{ textAlign: 'center', maxWidth: 600, margin: isMobile ? '0 auto 32px' : '0 auto 56px' }}>
         <EditableText
           edit={edit}
           value={data.eyebrow}
@@ -95,15 +97,28 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
           value={data.heading}
           onChange={(v) => onChange?.('heading', v)}
           placeholder="Título de la sección"
-          style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 'clamp(28px,3.5vw,42px)', margin: '12px 0 0', color: 'var(--ink)' }}
+          style={{
+            fontFamily: 'var(--font-dm-serif), serif',
+            fontSize: isMobile ? 26 : 'clamp(28px,3.5vw,42px)',
+            lineHeight: 1.2,
+            margin: '12px 0 0',
+            color: 'var(--ink)',
+          }}
         />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gridTemplateRows: 'auto auto', gap: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr',
+          gridTemplateRows: isMobile ? undefined : 'auto auto',
+          gap: 20,
+        }}
+      >
         <Tile
           image={data.featuredImage}
           caption={data.featuredImageCaption}
           edit={edit}
-          style={{ gridRow: 'span 2' }}
+          style={isMobile ? {} : { gridRow: 'span 2' }}
           aspectRatio={4 / 3}
           onImageFile={(file) => onImageChange?.('featuredImage', file)}
           onCaptionChange={(v) => onChange?.('featuredImageCaption', v)}

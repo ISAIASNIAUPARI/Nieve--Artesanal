@@ -154,55 +154,59 @@ export default function ButtonsEditor({
   )
 }
 
-/** Posición de cada punto dentro del recuadro de 100×64 del selector de zona. */
-const DOT_POSITION: Record<MobileZone, React.CSSProperties> = {
-  'top-left': { top: 4, left: 4 },
-  'top-center': { top: 4, left: '50%', transform: 'translateX(-50%)' },
-  'top-right': { top: 4, right: 4 },
-  'bottom-left': { bottom: 4, left: 4 },
-  'bottom-right': { bottom: 4, right: 4 },
-}
+const ZONE_SQUARE = 24
+const ZONE_GAP = 4
+/** Ancho total de la fila de 3 (arriba) — la fila de 2 (abajo) se ajusta a este mismo ancho. */
+const ZONE_ROW_WIDTH = ZONE_SQUARE * 3 + ZONE_GAP * 2
+
+const zoneBtn = (active: boolean): React.CSSProperties => ({
+  width: ZONE_SQUARE,
+  height: ZONE_SQUARE,
+  borderRadius: 5,
+  border: `1px solid ${active ? 'var(--accent)' : '#ffffff3b'}`,
+  background: active ? 'var(--accent)' : '#ffffff12',
+  cursor: 'pointer',
+})
+
+const zoneOf = (value: MobileZone) => MOBILE_ZONES.find((z) => z.value === value)!
 
 /**
- * Mini mapa de la pantalla móvil con un punto clickeable en cada una de las 5 zonas.
+ * Selector compacto de zona: 3 cuadrados arriba (izq/centro/der) + 2 abajo (izq/der),
+ * mismo ancho total que la fila de arriba — discreto, sin caja ni fondo grande detrás.
  * Clic de nuevo sobre la zona ya elegida la quita (vuelve al apilado normal).
  */
 function MobileZonePicker({ value, onChange }: { value?: MobileZone; onChange: (zone: MobileZone | undefined) => void }) {
+  const top = MOBILE_ZONES.slice(0, 3)
+  const bottom = MOBILE_ZONES.slice(3)
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <span style={{ opacity: 0.7 }}>Zona en móvil</span>
-      <div
-        style={{
-          position: 'relative',
-          width: 100,
-          height: 64,
-          border: '1px solid #ffffff3b',
-          borderRadius: 8,
-          background: '#00000066',
-        }}
-      >
-        {MOBILE_ZONES.map((z) => (
-          <button
-            key={z.value}
-            type="button"
-            title={z.label}
-            onClick={() => onChange(value === z.value ? undefined : z.value)}
-            style={{
-              position: 'absolute',
-              width: 18,
-              height: 18,
-              borderRadius: 5,
-              border: '1px solid #ffffff55',
-              background: value === z.value ? 'var(--accent)' : '#ffffff22',
-              cursor: 'pointer',
-              ...DOT_POSITION[z.value],
-            }}
-          />
-        ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: ZONE_GAP, width: ZONE_ROW_WIDTH }}>
+        <div style={{ display: 'flex', gap: ZONE_GAP }}>
+          {top.map((z) => (
+            <button
+              key={z.value}
+              type="button"
+              title={z.label}
+              onClick={() => onChange(value === z.value ? undefined : z.value)}
+              style={zoneBtn(value === z.value)}
+            />
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {bottom.map((z) => (
+            <button
+              key={z.value}
+              type="button"
+              title={z.label}
+              onClick={() => onChange(value === z.value ? undefined : z.value)}
+              style={zoneBtn(value === z.value)}
+            />
+          ))}
+        </div>
       </div>
-      <span style={{ fontSize: 11, opacity: 0.55 }}>
-        {value ? MOBILE_ZONES.find((z) => z.value === value)?.label : 'Sin zona — apilado normal'}
-      </span>
+      <span style={{ fontSize: 11, opacity: 0.55 }}>{value ? zoneOf(value).label : 'Sin zona — apilado normal'}</span>
     </div>
   )
 }

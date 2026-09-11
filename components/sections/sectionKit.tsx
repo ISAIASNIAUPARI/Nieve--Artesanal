@@ -1,6 +1,7 @@
 'use client'
 
 import EditableText from '../editable/EditableText'
+import { useIsMobileView } from '../useIsMobileView'
 
 /** Cáscara de sección: mismo padding y ancho que el resto del sitio. */
 export function SectionShell({
@@ -12,7 +13,12 @@ export function SectionShell({
   children: React.ReactNode
   style?: React.CSSProperties
 }) {
-  return <section id={id} style={{ padding: '100px 6vw', ...style }}>{children}</section>
+  const isMobile = useIsMobileView()
+  return (
+    <section id={id} style={{ padding: isMobile ? '48px 20px' : '100px 6vw', ...style }}>
+      {children}
+    </section>
+  )
 }
 
 /**
@@ -34,9 +40,10 @@ export function SectionHeading({
   subtitle?: string
   onSubtitleChange?: (value: string) => void
 }) {
+  const isMobile = useIsMobileView()
   const showSubtitle = edit || Boolean(subtitle && subtitle.trim() !== '')
   return (
-    <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 48px' }}>
+    <div style={{ textAlign: 'center', maxWidth: 640, margin: isMobile ? '0 auto 28px' : '0 auto 48px' }}>
       {/*
         Cada campo va en su propio contenedor de ancho completo. EditableText, en modo
         edición, cae a `display:inline-block` cuando su `style` no fija uno propio (lo
@@ -77,7 +84,8 @@ export function SectionHeading({
           placeholder="Título de la sección"
           style={{
             fontFamily: 'var(--font-dm-serif), serif',
-            fontSize: 'clamp(28px,3.5vw,42px)',
+            fontSize: isMobile ? 26 : 'clamp(28px,3.5vw,42px)',
+            lineHeight: 1.2,
             color: 'var(--ink)',
             margin: 0,
           }}

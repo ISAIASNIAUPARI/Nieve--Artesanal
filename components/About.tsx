@@ -5,6 +5,7 @@ import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
+import { useIsMobileView } from './useIsMobileView'
 
 interface AboutProps {
   data?: AboutSectionData
@@ -17,6 +18,7 @@ interface AboutProps {
 }
 
 export default function About({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: AboutProps) {
+  const isMobile = useIsMobileView()
   if (!data) return null
 
   return (
@@ -24,10 +26,10 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
       id="about"
       style={{
         position: 'relative',
-        padding: '100px 6vw',
+        padding: isMobile ? '48px 20px' : '100px 6vw',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 64,
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        gap: isMobile ? 32 : 64,
         alignItems: 'center',
       }}
     >
@@ -47,7 +49,8 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
           placeholder="Título de la sección"
           style={{
             fontFamily: 'var(--font-dm-serif), serif',
-            fontSize: 'clamp(28px,3.5vw,42px)',
+            fontSize: isMobile ? 26 : 'clamp(28px,3.5vw,42px)',
+            lineHeight: 1.2,
             margin: '12px 0 20px',
             color: 'var(--ink)',
           }}

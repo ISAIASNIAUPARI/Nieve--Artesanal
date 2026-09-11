@@ -5,6 +5,7 @@ import EditableText from '../editable/EditableText'
 import CloudinaryImage from '../editable/CloudinaryImage'
 import SectionButtons from './SectionButtons'
 import ButtonsEditor from '../admin/ButtonsEditor'
+import { useIsMobileView } from '../useIsMobileView'
 
 export default function CtaBanner({
   id,
@@ -17,8 +18,18 @@ export default function CtaBanner({
   edit?: boolean
   onChange?: (data: CtaBannerData | ((prev: CtaBannerData) => CtaBannerData)) => void
 }) {
+  const isMobile = useIsMobileView()
   return (
-    <section id={id} style={{ position: 'relative', padding: '80px 6vw', background: 'var(--accent)', color: '#fff', overflow: 'hidden' }}>
+    <section
+      id={id}
+      style={{
+        position: 'relative',
+        padding: isMobile ? '48px 20px' : '80px 6vw',
+        background: 'var(--accent)',
+        color: '#fff',
+        overflow: 'hidden',
+      }}
+    >
       {(edit || data.image?.src) && (
         <CloudinaryImage
           src={data.image?.src}
@@ -83,7 +94,13 @@ export default function CtaBanner({
             value={data.heading}
             onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
             placeholder="Título del banner"
-            style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 'clamp(26px,3.4vw,40px)', margin: 0, color: '#fff' }}
+            style={{
+              fontFamily: 'var(--font-dm-serif), serif',
+              fontSize: isMobile ? 25 : 'clamp(26px,3.4vw,40px)',
+              lineHeight: 1.2,
+              margin: 0,
+              color: '#fff',
+            }}
           />
         </div>
         <EditableText
