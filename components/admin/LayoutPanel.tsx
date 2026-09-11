@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { LayoutSection } from '@/lib/types'
 import { templateTypeOf } from '@/lib/types'
 import { useEdit } from './EditProvider'
@@ -70,12 +70,28 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Flash verde de confirmación sobre la fila que se acaba de mover con ↑/↓ (puramente
+  // visual — no bloquea nada; el usuario puede seguir haciendo clic mientras dura).
+  const [movedId, setMovedId] = useState<string | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (flashTimer.current) clearTimeout(flashTimer.current)
+    }
+  }, [])
+
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir
     if (target < 0 || target >= sections.length) return
     const next = [...sections]
     ;[next[index], next[target]] = [next[target], next[index]]
     setLayoutSections(next)
+
+    const movedSectionId = sections[index].id
+    setMovedId(movedSectionId)
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    flashTimer.current = setTimeout(() => setMovedId(null), 800)
   }
 
   const toggle = (id: string) =>
@@ -141,6 +157,8 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
               <div
                 key={s.id}
                 style={{
+                  position: 'relative',
+                  overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
@@ -151,6 +169,17 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
                   opacity: deleting === s.id ? 0.4 : s.visible ? 1 : 0.55,
                 }}
               >
+                {movedId === s.id && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      animation: 'sectionMoveFlash 800ms ease',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+
                 <span style={positionBadge} title={`Posición ${i + 1}`}>{i + 1}</span>
 
                 <div style={{ display: 'flex', gap: 4 }}>
