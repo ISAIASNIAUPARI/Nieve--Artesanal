@@ -91,7 +91,7 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
     const movedSectionId = sections[index].id
     setMovedId(movedSectionId)
     if (flashTimer.current) clearTimeout(flashTimer.current)
-    flashTimer.current = setTimeout(() => setMovedId(null), 800)
+    flashTimer.current = setTimeout(() => setMovedId(null), 2000)
   }
 
   const toggle = (id: string) =>
@@ -174,7 +174,7 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      animation: 'sectionMoveFlash 800ms ease',
+                      animation: 'sectionMoveFlash 2000ms ease',
                       pointerEvents: 'none',
                     }}
                   />
