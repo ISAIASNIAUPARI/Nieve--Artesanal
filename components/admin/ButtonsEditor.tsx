@@ -275,7 +275,15 @@ function SortableButtonRow({
 
       <label style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <span style={{ opacity: 0.7, fontSize: 10 }}>Tipo de destino</span>
-        <select style={field} value={b.hrefType} onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType })}>
+        {/* href se limpia al cambiar el tipo — sin esto, un botón nuevo (que
+            arranca con href="#hero") al pasarlo a URL/WhatsApp/Teléfono se
+            quedaba con "#hero" metido en el campo Destino, dando la
+            impresión de que no había dónde escribir el link real. */}
+        <select
+          style={field}
+          value={b.hrefType}
+          onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType, href: '' })}
+        >
           {(Object.keys(TYPE_LABELS) as HrefType[]).map((t) => (
             <option key={t} value={t} style={{ color: '#000' }}>
               {TYPE_LABELS[t]}
