@@ -61,7 +61,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
             <EditableText edit={edit} value={data.phone} onChange={(v) => onChange?.('phone', v)} placeholder="Teléfono" />
           </div>
         </div>
-        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} style={{ marginTop: 28 }} />
+        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
         {edit && onButtonsChange && (
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Ubicación" />
         )}
