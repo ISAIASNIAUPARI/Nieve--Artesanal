@@ -6,9 +6,9 @@
   "buttons": [
     {
       "id": "9c2cb76b-5c4a-4a3d-97d3-6cb029dcaa1d",
-      "text": "0998381419",
-      "href": "#hero",
-      "hrefType": "phone",
+      "text": "WhatsApp",
+      "href": "https://wa.link/ccsg3d",
+      "hrefType": "url",
       "desktopX": 62.11111280653212,
       "desktopY": 63.61503495373096,
       "mobileX": 23.892204604462947,
