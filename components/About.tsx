@@ -82,7 +82,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
         focalY={data.image?.focalY}
         aspectRatio={4 / 3}
         onFocalChange={(x, y) => onFocalChange?.('image', x, y)}
-        wrapperStyle={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
+        wrapperStyle={{ width: '100%', borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
       />
     </section>
   )

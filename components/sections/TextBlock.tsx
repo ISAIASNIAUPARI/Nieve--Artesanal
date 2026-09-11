@@ -49,7 +49,7 @@ export default function TextBlock({
               image: { src: prev.image?.src ?? '', alt: prev.image?.alt, focalX: x, focalY: y },
             }))
           }
-          wrapperStyle={{ maxWidth: 680, margin: '0 auto 32px', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}
+          wrapperStyle={{ width: '100%', maxWidth: 680, margin: '0 auto 32px', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}
         />
       )}
       <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
