@@ -1,3 +1,5 @@
+import PasswordField from '@/components/admin/PasswordField'
+
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams
 
@@ -34,20 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </h1>
           <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)' }}>Nieve Artesanal</p>
         </div>
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          required
-          autoFocus
-          style={{
-            padding: '12px 14px',
-            borderRadius: 10,
-            border: '1px solid var(--line)',
-            fontSize: 15,
-            fontFamily: 'inherit',
-          }}
-        />
+        <PasswordField />
         {error && <p style={{ margin: 0, color: '#c0392b', fontSize: 13 }}>Contraseña incorrecta.</p>}
         <button
           type="submit"
