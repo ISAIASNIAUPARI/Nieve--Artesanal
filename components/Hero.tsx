@@ -108,7 +108,7 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
             }}
           />
           <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} />
-          {edit && onButtonsChange && (
+          {edit && onButtonsChange && !isMobile && (
             <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Portada" />
           )}
         </div>

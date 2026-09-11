@@ -72,7 +72,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
           style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
         />
         <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
-        {edit && onButtonsChange && (
+        {edit && onButtonsChange && !isMobile && (
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Nosotros" />
         )}
       </div>

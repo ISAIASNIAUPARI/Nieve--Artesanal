@@ -164,7 +164,7 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
         </div>
       )}
       <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} align="center" style={{ marginTop: 44 }} />
-      {edit && onButtonsChange && (
+      {edit && onButtonsChange && !isMobile && (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Sabores" />
         </div>

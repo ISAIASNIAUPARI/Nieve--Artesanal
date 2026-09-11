@@ -42,15 +42,17 @@ export default function Toolbar() {
         <button
           type="button"
           onClick={() => setLayoutOpen(true)}
+          disabled={viewMode === 'mobile'}
+          title={viewMode === 'mobile' ? 'El orden de las secciones se organiza desde la vista desktop' : undefined}
           style={{
             border: '1px solid #ffffff3b',
-            background: '#ffffff12',
-            color: '#fff',
+            background: viewMode === 'mobile' ? '#ffffff08' : '#ffffff12',
+            color: viewMode === 'mobile' ? '#ffffff55' : '#fff',
             borderRadius: 999,
             padding: '6px 14px',
             fontSize: 13,
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: viewMode === 'mobile' ? 'default' : 'pointer',
           }}
         >
           ☰ Organizar página
