@@ -19,8 +19,8 @@
       "text": "MENU",
       "href": "#menu-grid-menu",
       "hrefType": "anchor",
-      "desktopX": 27.98245900447802,
-      "desktopY": 76.6220780770829,
+      "desktopX": 18.732061797363613,
+      "desktopY": 76.8712832642355,
       "mobileX": 8.713235294117645,
       "mobileY": 76.63570977217441
     },
@@ -29,8 +29,8 @@
       "text": "LLAMAR",
       "href": "593998381419",
       "hrefType": "phone",
-      "desktopX": 18.266878645662054,
-      "desktopY": 76.8712921765585,
+      "desktopX": 7.554492167885291,
+      "desktopY": 87.8363845799986,
       "mobileX": 8.709906103776731,
       "mobileY": 85.2333398262577
     }
