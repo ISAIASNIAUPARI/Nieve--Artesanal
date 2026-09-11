@@ -1,10 +1,11 @@
 'use client'
 
-import type { Button, HrefType } from '@/lib/types'
-import { MAX_BUTTONS, PAGE_ANCHORS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
+import type { Button, HrefType, MobileZone } from '@/lib/types'
+import { MAX_BUTTONS, MOBILE_ZONES, PAGE_ANCHORS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useEdit } from './EditProvider'
 
 const TYPE_LABELS: Record<HrefType, string> = {
   anchor: 'Misma página',
@@ -75,6 +76,7 @@ export default function ButtonsEditor({
   sectionLabel: string
   max?: number
 }) {
+  const { viewMode } = useEdit()
   const update = (id: string, patch: Partial<Button>) =>
     onChange(buttons.map((b) => (b.id === id ? { ...b, ...patch } : b)))
 
@@ -121,6 +123,7 @@ export default function ButtonsEditor({
               button={b}
               index={i}
               total={buttons.length}
+              mobileMode={viewMode === 'mobile'}
               onUpdate={(patch) => update(b.id, patch)}
               onRemove={() => remove(b.id)}
               onMove={(dir) => move(i, dir)}
@@ -151,10 +154,64 @@ export default function ButtonsEditor({
   )
 }
 
+/** Posición de cada punto dentro del recuadro de 100×64 del selector de zona. */
+const DOT_POSITION: Record<MobileZone, React.CSSProperties> = {
+  'top-left': { top: 4, left: 4 },
+  'top-center': { top: 4, left: '50%', transform: 'translateX(-50%)' },
+  'top-right': { top: 4, right: 4 },
+  'bottom-left': { bottom: 4, left: 4 },
+  'bottom-right': { bottom: 4, right: 4 },
+}
+
+/**
+ * Mini mapa de la pantalla móvil con un punto clickeable en cada una de las 5 zonas.
+ * Clic de nuevo sobre la zona ya elegida la quita (vuelve al apilado normal).
+ */
+function MobileZonePicker({ value, onChange }: { value?: MobileZone; onChange: (zone: MobileZone | undefined) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <span style={{ opacity: 0.7 }}>Zona en móvil</span>
+      <div
+        style={{
+          position: 'relative',
+          width: 100,
+          height: 64,
+          border: '1px solid #ffffff3b',
+          borderRadius: 8,
+          background: '#00000066',
+        }}
+      >
+        {MOBILE_ZONES.map((z) => (
+          <button
+            key={z.value}
+            type="button"
+            title={z.label}
+            onClick={() => onChange(value === z.value ? undefined : z.value)}
+            style={{
+              position: 'absolute',
+              width: 18,
+              height: 18,
+              borderRadius: 5,
+              border: '1px solid #ffffff55',
+              background: value === z.value ? 'var(--accent)' : '#ffffff22',
+              cursor: 'pointer',
+              ...DOT_POSITION[z.value],
+            }}
+          />
+        ))}
+      </div>
+      <span style={{ fontSize: 11, opacity: 0.55 }}>
+        {value ? MOBILE_ZONES.find((z) => z.value === value)?.label : 'Sin zona — apilado normal'}
+      </span>
+    </div>
+  )
+}
+
 function SortableButtonRow({
   button: b,
   index: i,
   total,
+  mobileMode,
   onUpdate,
   onRemove,
   onMove,
@@ -162,6 +219,7 @@ function SortableButtonRow({
   button: Button
   index: number
   total: number
+  mobileMode: boolean
   onUpdate: (patch: Partial<Button>) => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
@@ -302,6 +360,10 @@ function SortableButtonRow({
         )}
         {hrefError && <span style={{ color: '#ff8a8a', fontSize: 12 }}>Falta el destino o no está permitido.</span>}
       </label>
+
+      {mobileMode && (
+        <MobileZonePicker value={b.mobileZone} onChange={(zone) => onUpdate({ mobileZone: zone })} />
+      )}
     </div>
   )
 }

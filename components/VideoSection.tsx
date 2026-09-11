@@ -81,7 +81,7 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
   if (!data) return null
 
   return (
-    <section id="video" style={{ padding: '20px 6vw 100px' }}>
+    <section id="video" style={{ position: 'relative', padding: '20px 6vw 100px' }}>
       <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 40px' }}>
         <EditableText
           edit={edit}

@@ -1,12 +1,41 @@
 'use client'
 
-import type { Button } from '@/lib/types'
+import { useEffect, useState } from 'react'
+import type { Button, MobileZone } from '@/lib/types'
 import { resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useEditOptional } from '../admin/EditProvider'
 
 type Tone = 'light' | 'dark' | 'onAccent'
+
+const MOBILE_BREAKPOINT = '(max-width: 768px)'
+
+/**
+ * true en pantallas ≤768px del navegador real — para el sitio público. Dentro del
+ * admin, `viewMode` (EditProvider) manda por encima de esto para poder previsualizar
+ * la vista móvil en un frame de escritorio sin depender del ancho real de la ventana.
+ */
+function useIsMobileViewport() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_BREAKPOINT)
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return isMobile
+}
+
+const ZONE_POSITION: Record<MobileZone, React.CSSProperties> = {
+  'top-left': { top: 16, left: 16 },
+  'top-center': { top: 16, left: '50%', transform: 'translateX(-50%)' },
+  'top-right': { top: 16, right: 16 },
+  'bottom-left': { bottom: 16, left: 16 },
+  'bottom-right': { bottom: 16, right: 16 },
+}
 
 /**
  * Renderiza la barra de botones de una sección a partir del array `buttons`.
@@ -24,6 +53,13 @@ type Tone = 'light' | 'dark' | 'onAccent'
  * COMPLETO (no solo los botones con texto/destino ya completos que se
  * alcanzan a renderizar), para no perder la posición relativa de un botón
  * a medio llenar que por ahora no se muestra como pastilla.
+ *
+ * En vista móvil (real ≤768px, o el toggle 📱 del admin), un botón con
+ * `mobileZone` se ancla con position:absolute a esa esquina de la sección
+ * (el `<section>` del componente padre necesita `position:relative` — ya
+ * lo tienen los 6 que usan este componente). Un botón SIN mobileZone sigue
+ * el comportamiento normal (fila/apilado); si NINGÚN botón tiene zona, el
+ * móvil se ve exactamente igual que antes de esta función existir.
  */
 export default function SectionButtons({
   buttons,
@@ -40,6 +76,10 @@ export default function SectionButtons({
   style?: React.CSSProperties
   onReorder?: (buttons: Button[]) => void
 }) {
+  const editCtx = useEditOptional()
+  const autoMobile = useIsMobileViewport()
+  const isMobile = editCtx ? editCtx.viewMode === 'mobile' : autoMobile
+
   const all = buttons || []
   const list = all.filter((b) => b.text?.trim() && b.href?.trim())
   if (list.length === 0) return null
@@ -77,6 +117,9 @@ export default function SectionButtons({
     }
   }
 
+  const zoned = isMobile ? list.filter((b) => b.mobileZone) : []
+  const flowing = isMobile ? list.filter((b) => !b.mobileZone) : list
+
   // distance:8 deja que un clic normal (sin mover el mouse) no dispare un
   // arrastre — el mismo patrón que ya usa ButtonsEditor.tsx.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
@@ -89,8 +132,9 @@ export default function SectionButtons({
     onReorder(arrayMove(all, oldIndex, newIndex))
   }
 
-  const pills = list.map((b, i) =>
-    draggable ? (
+  const flowingPills = flowing.map((b) => {
+    const i = list.indexOf(b)
+    return draggable ? (
       <SortableButtonPill key={b.id} button={b} pillStyle={styleFor(i)} />
     ) : (
       <a
@@ -104,20 +148,47 @@ export default function SectionButtons({
         {b.text}
       </a>
     )
-  )
+  })
 
-  const row = (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: align, ...style }}>{pills}</div>
-  )
+  const row =
+    flowingPills.length === 0 ? null : (
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: align, ...style }}>{flowingPills}</div>
+    )
 
-  if (!draggable) return row
+  const rowNode =
+    row && draggable ? (
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={flowing.map((b) => b.id)} strategy={rectSortingStrategy}>
+          {row}
+        </SortableContext>
+      </DndContext>
+    ) : (
+      row
+    )
+
+  if (zoned.length === 0) return rowNode
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={list.map((b) => b.id)} strategy={rectSortingStrategy}>
-        {row}
-      </SortableContext>
-    </DndContext>
+    <>
+      {rowNode}
+      {zoned.map((b) => (
+        <a
+          key={b.id}
+          href={resolveButtonHref(b)}
+          target={b.hrefType === 'url' ? '_blank' : undefined}
+          rel={b.hrefType === 'url' ? 'noreferrer' : undefined}
+          onClick={(e) => edit && e.preventDefault()}
+          style={{
+            ...styleFor(list.indexOf(b)),
+            position: 'absolute',
+            zIndex: 5,
+            ...ZONE_POSITION[b.mobileZone as MobileZone],
+          }}
+        >
+          {b.text}
+        </a>
+      ))}
+    </>
   )
 }
 

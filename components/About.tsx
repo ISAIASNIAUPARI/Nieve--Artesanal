@@ -23,6 +23,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
     <section
       id="about"
       style={{
+        position: 'relative',
         padding: '100px 6vw',
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',

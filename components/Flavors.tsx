@@ -80,7 +80,7 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
   if (!data) return null
 
   return (
-    <section id="flavors" style={{ padding: '20px 6vw 100px' }}>
+    <section id="flavors" style={{ position: 'relative', padding: '20px 6vw 100px' }}>
       <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 56px' }}>
         <EditableText
           edit={edit}
