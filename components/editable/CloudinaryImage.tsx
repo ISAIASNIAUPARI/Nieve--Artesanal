@@ -1,15 +1,17 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { focalPosition } from '@/lib/types'
 import { uploadMediaToCloudinary } from '@/lib/upload'
+import { useEditOptional } from '../admin/EditProvider'
 import FocalPointPicker from '../admin/FocalPointPicker'
 
 /**
  * Imagen con subida a Cloudinary autocontenida (progreso propio). En modo lectura
- * es un <img> normal. En edición: clic → elegir archivo → sube → `onUploaded(url)`.
- * El icono ⊕ (si hay imagen) abre el selector de punto focal → `onFocalChange(x, y)`.
- * Se usa en las secciones dinámicas (tarjetas de menú, galería…).
+ * es un <img> normal. En edición: clic, o arrastrar y soltar un archivo, → sube →
+ * `onUploaded(url)`. El icono ⊕ (si hay imagen) abre el selector de punto focal —
+ * también se abre solo tras soltar una imagen nueva. Se usa en las secciones
+ * dinámicas (tarjetas de menú, galería…).
  */
 export default function CloudinaryImage({
   src,
@@ -39,20 +41,47 @@ export default function CloudinaryImage({
   const [pct, setPct] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [invalidFile, setInvalidFile] = useState(false)
+  const invalidTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const uploading = pct !== null
   const objectPosition = focalPosition({ focalX, focalY })
 
-  async function handleFile(file: File) {
+  const editCtx = useEditOptional()
+  const dropZoneActive = !!editCtx?.isDraggingFile
+
+  useEffect(() => {
+    return () => {
+      if (invalidTimer.current) clearTimeout(invalidTimer.current)
+    }
+  }, [])
+
+  function flashInvalid() {
+    setInvalidFile(true)
+    if (invalidTimer.current) clearTimeout(invalidTimer.current)
+    invalidTimer.current = setTimeout(() => setInvalidFile(false), 2000)
+  }
+
+  async function handleFile(file: File, opts?: { openPickerOnSuccess?: boolean }) {
     setError(null)
     setPct(0)
     try {
       const url = await uploadMediaToCloudinary(file, 'image', setPct)
       onUploaded?.(url)
+      if (opts?.openPickerOnSuccess) setPickerOpen(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al subir la imagen.')
     } finally {
       setPct(null)
     }
+  }
+
+  function handleDroppedFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      flashInvalid()
+      return
+    }
+    handleFile(file, { openPickerOnSuccess: true })
   }
 
   const img = src ? (
@@ -82,8 +111,37 @@ export default function CloudinaryImage({
 
   return (
     <div
-      style={{ position: 'relative', cursor: uploading ? 'progress' : 'pointer', ...wrapperStyle }}
+      style={{
+        position: 'relative',
+        cursor: uploading ? 'progress' : 'pointer',
+        outline: dropZoneActive ? '2px dashed #3b82f688' : 'none',
+        outlineOffset: -2,
+        transition: 'outline-color .15s',
+        ...wrapperStyle,
+      }}
       onClick={() => !uploading && inputRef.current?.click()}
+      onDragEnter={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(true)
+      }}
+      onDragOver={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        e.dataTransfer.dropEffect = 'copy'
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setIsDragging(false)
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(false)
+        const file = e.dataTransfer.files?.[0]
+        if (file) handleDroppedFile(file)
+      }}
     >
       {img}
       {uploading && (
@@ -134,6 +192,51 @@ export default function CloudinaryImage({
           }}
         >
           🖼️ {src ? 'Cambiar' : 'Subir'} foto
+        </div>
+      )}
+
+      {isDragging && !uploading && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            background: '#00000080',
+            border: '2px dashed #fff',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: 13,
+            pointerEvents: 'none',
+          }}
+        >
+          <span style={{ fontSize: 32, lineHeight: 1 }}>↑</span>
+          <span>Suelta para cambiar</span>
+        </div>
+      )}
+
+      {invalidFile && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#c0392bcc',
+            border: '2px dashed #fff',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: 13,
+            textAlign: 'center',
+            padding: 12,
+            pointerEvents: 'none',
+          }}
+        >
+          Solo se aceptan imágenes
         </div>
       )}
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type {
   Button,
   DynamicSectionData,
@@ -42,8 +42,11 @@ interface EditContextValue {
   registerCreatedSection: (id: string, data: DynamicSectionData, layout: LayoutSection[]) => void
   /** Quita una sección recién borrada por /api/admin/delete-section (ya commiteada). */
   unregisterDeletedSection: (id: string, layout: LayoutSection[]) => void
-  uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<void>
+  /** Devuelve true si la subida terminó bien (false si falló) — para abrir el punto focal tras soltar un archivo. */
+  uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<boolean>
   uploads: Record<string, MediaUploadStatus>
+  /** true mientras el usuario arrastra un archivo sobre la página del admin (para pintar las zonas de drop). */
+  isDraggingFile: boolean
   saving: boolean
   saveError: string | null
   lastSaved: SaveResult | null
@@ -70,9 +73,52 @@ export function EditProvider({
   const [dirtyDynamic, setDirtyDynamic] = useState<Set<string>>(new Set())
   const [layoutDirty, setLayoutDirty] = useState(false)
   const [uploads, setUploads] = useState<Record<string, MediaUploadStatus>>({})
+  const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastSaved, setLastSaved] = useState<SaveResult | null>(null)
+
+  // Arrastrar un archivo sobre la página del admin: marca isDraggingFile (para pintar
+  // todos los contenedores de imagen) y evita que el navegador lo abra si se suelta
+  // fuera de uno de ellos. Cuenta entradas/salidas porque dragenter/dragleave burbujean
+  // por cada hijo que el cursor cruza — el contador solo llega a 0 al salir de verdad.
+  useEffect(() => {
+    let depth = 0
+
+    const isImageDrag = (e: DragEvent) => {
+      const items = e.dataTransfer?.items
+      if (!items || items.length === 0) return true // sin info todavía: asumir que sí
+      return Array.from(items).some((it) => it.kind === 'file' && (it.type === '' || it.type.startsWith('image/')))
+    }
+
+    const onDragEnter = (e: DragEvent) => {
+      depth++
+      if (depth === 1 && isImageDrag(e)) setIsDraggingFile(true)
+    }
+    const onDragOver = (e: DragEvent) => {
+      e.preventDefault()
+    }
+    const onDragLeave = () => {
+      depth = Math.max(0, depth - 1)
+      if (depth === 0) setIsDraggingFile(false)
+    }
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault()
+      depth = 0
+      setIsDraggingFile(false)
+    }
+
+    document.addEventListener('dragenter', onDragEnter)
+    document.addEventListener('dragover', onDragOver)
+    document.addEventListener('dragleave', onDragLeave)
+    document.addEventListener('drop', onDrop)
+    return () => {
+      document.removeEventListener('dragenter', onDragEnter)
+      document.removeEventListener('dragover', onDragOver)
+      document.removeEventListener('dragleave', onDragLeave)
+      document.removeEventListener('drop', onDrop)
+    }
+  }, [])
 
   const markDirty = useCallback((section: SectionKey) => {
     setDirtySections((prev) => new Set(prev).add(section))
@@ -173,11 +219,13 @@ export function EditProvider({
           delete next[key]
           return next
         })
+        return true
       } catch (err) {
         setUploads((prev) => ({
           ...prev,
           [key]: { pct: 0, error: err instanceof Error ? err.message : 'Error al subir el archivo.' },
         }))
+        return false
       }
     },
     [markDirty]
@@ -248,6 +296,7 @@ export function EditProvider({
       unregisterDeletedSection,
       uploadMedia,
       uploads,
+      isDraggingFile,
       saving,
       saveError,
       lastSaved,
@@ -270,6 +319,7 @@ export function EditProvider({
       unregisterDeletedSection,
       uploadMedia,
       uploads,
+      isDraggingFile,
       saving,
       saveError,
       lastSaved,
@@ -284,4 +334,13 @@ export function useEdit() {
   const ctx = useContext(EditContext)
   if (!ctx) throw new Error('useEdit debe usarse dentro de <EditProvider>')
   return ctx
+}
+
+/**
+ * Igual que useEdit() pero devuelve null en vez de lanzar cuando no hay <EditProvider>
+ * — para componentes como EditableImage/CloudinaryImage que también se renderizan
+ * en el sitio público (fuera del admin), donde no hay proveedor.
+ */
+export function useEditOptional() {
+  return useContext(EditContext)
 }
