@@ -39,6 +39,8 @@ export default function PhotoGallery({
         heading={data.heading}
         edit={edit}
         onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
+        subtitle={data.subtitle}
+        onSubtitleChange={(v) => onChange?.((prev) => ({ ...prev, subtitle: v }))}
       />
       <div
         style={{

@@ -30,7 +30,8 @@ export default function Faq({
         heading={data.heading}
         edit={edit}
         onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
-        eyebrow="Preguntas frecuentes"
+        subtitle={data.subtitle}
+        onSubtitleChange={(v) => onChange?.((prev) => ({ ...prev, subtitle: v }))}
       />
       <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {items.map((item, i) => (

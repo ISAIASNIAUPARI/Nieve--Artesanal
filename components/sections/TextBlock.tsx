@@ -31,6 +31,8 @@ export default function TextBlock({
         heading={data.heading}
         edit={edit}
         onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
+        subtitle={data.subtitle}
+        onSubtitleChange={(v) => onChange?.((prev) => ({ ...prev, subtitle: v }))}
       />
       {(edit || data.image?.src) && (
         <CloudinaryImage

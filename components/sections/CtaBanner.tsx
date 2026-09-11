@@ -53,6 +53,24 @@ export default function CtaBanner({
           textAlign: 'center',
         }}
       >
+        {(edit || Boolean(data.subtitle && data.subtitle.trim() !== '')) && (
+          <EditableText
+            edit={edit}
+            value={data.subtitle}
+            onChange={(v) => onChange?.((prev) => ({ ...prev, subtitle: v }))}
+            placeholder="Etiqueta superior (opcional)"
+            alwaysShowOutline
+            style={{
+              display: 'inline-block',
+              color: '#fff',
+              opacity: 0.85,
+              fontWeight: 600,
+              fontSize: 14,
+              letterSpacing: '.08em',
+              textTransform: 'uppercase',
+            }}
+          />
+        )}
         <EditableText
           as="h2"
           edit={edit}

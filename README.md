@@ -66,7 +66,11 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
   fuera de uno de ellos
 - `components/sections/` — piezas compartidas y las 5 plantillas de sección nueva
   (`CtaBanner`, `MenuGrid`, `TextBlock`, `PhotoGallery`, `Faq`, más `DynamicSection` que
-  elige cuál renderizar por el campo `type`)
+  elige cuál renderizar por el campo `type`). Las 5 tienen un `subtitle` opcional
+  (la etiqueta pequeña sobre el título) que arranca vacío al crear la sección — en
+  el sitio público solo aparece si tiene texto; en `/admin` el campo se ve siempre,
+  con el contorno azul fijo (`EditableText alwaysShowOutline`), para que no pase
+  desapercibido aunque esté vacío.
 - `content/` — el contenido real del sitio, un JSON por sección
 - `content/pageLayout.json` — orden y visibilidad de TODAS las secciones (base +
   nuevas); editable desde «Organizar página» en `/admin`

@@ -15,23 +15,37 @@ export function SectionShell({
   return <section id={id} style={{ padding: '100px 6vw', ...style }}>{children}</section>
 }
 
-/** Encabezado centrado (antetítulo opcional + título editable). */
+/**
+ * Encabezado centrado: subtítulo pequeño editable (opcional) + título editable.
+ * El subtítulo se muestra siempre en edición (con el contorno azul fijo, para que
+ * se note que ahí se puede escribir aunque esté vacío); en el sitio público solo
+ * aparece si tiene texto de verdad — "" o solo espacios no dejan hueco en blanco.
+ */
 export function SectionHeading({
   heading,
   edit,
   onChange,
-  eyebrow,
+  subtitle,
+  onSubtitleChange,
 }: {
   heading?: string
   edit?: boolean
   onChange?: (value: string) => void
-  eyebrow?: string
+  subtitle?: string
+  onSubtitleChange?: (value: string) => void
 }) {
+  const showSubtitle = edit || Boolean(subtitle && subtitle.trim() !== '')
   return (
     <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 48px' }}>
-      {eyebrow && (
-        <div
+      {showSubtitle && (
+        <EditableText
+          edit={edit}
+          value={subtitle}
+          onChange={onSubtitleChange}
+          placeholder="Etiqueta superior (opcional)"
+          alwaysShowOutline
           style={{
+            display: 'inline-block',
             color: 'var(--accent)',
             fontWeight: 600,
             fontSize: 14,
@@ -39,9 +53,7 @@ export function SectionHeading({
             textTransform: 'uppercase',
             marginBottom: 8,
           }}
-        >
-          {eyebrow}
-        </div>
+        />
       )}
       <EditableText
         as="h2"

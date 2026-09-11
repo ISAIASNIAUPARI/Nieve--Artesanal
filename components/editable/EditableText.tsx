@@ -11,6 +11,12 @@ interface EditableTextProps {
   placeholder?: string
   /** Si el elemento va dentro de un <a>, evita que el click navegue mientras se edita. */
   stopClickNavigation?: boolean
+  /**
+   * Si true, el contorno azul queda visible siempre en edición (no solo al pasar
+   * el mouse o enfocar) — para campos opcionales fáciles de pasar por alto cuando
+   * están vacíos, como el subtítulo de una sección.
+   */
+  alwaysShowOutline?: boolean
 }
 
 /**
@@ -32,9 +38,11 @@ export default function EditableText({
   style,
   placeholder = 'Escribe aquí…',
   stopClickNavigation,
+  alwaysShowOutline,
 }: EditableTextProps) {
   const ref = useRef<HTMLElement>(null)
   const focused = useRef(false)
+  const restingOutlineColor = alwaysShowOutline ? '#3b82f688' : '#ffffff00'
 
   useLayoutEffect(() => {
     if (!edit) return
@@ -67,7 +75,7 @@ export default function EditableText({
       }}
       onBlur={(e) => {
         focused.current = false
-        ;(e.currentTarget as HTMLElement).style.outlineColor = '#ffffff00'
+        ;(e.currentTarget as HTMLElement).style.outlineColor = restingOutlineColor
         ;(e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
         const text = (e.currentTarget as HTMLElement).innerText.replace(/\n+$/, '').trim()
         if (text !== (value || '')) onChange?.(text)
@@ -76,11 +84,11 @@ export default function EditableText({
         if (!focused.current) (e.currentTarget as HTMLElement).style.outlineColor = '#3b82f688'
       }}
       onMouseLeave={(e) => {
-        if (!focused.current) (e.currentTarget as HTMLElement).style.outlineColor = '#ffffff00'
+        if (!focused.current) (e.currentTarget as HTMLElement).style.outlineColor = restingOutlineColor
       }}
       style={{
         ...style,
-        outline: '1px dashed #ffffff00',
+        outline: `1px dashed ${restingOutlineColor}`,
         outlineOffset: 4,
         borderRadius: 4,
         cursor: 'text',
