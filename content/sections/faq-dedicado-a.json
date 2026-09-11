@@ -4,18 +4,18 @@
   "items": [
     {
       "id": "b31efeaa-fd54-4e36-ab66-fb58a8ac5a02",
-      "question": "",
-      "answer": ""
+      "question": "¿Qué sabores de helado tienen disponibles?",
+      "answer": "Contamos con una variedad de sabores clásicos y especiales, elaborados con ingredientes de calidad."
     },
     {
       "id": "b87a3d47-afe5-441f-b1d4-c189d71bf055",
-      "question": "",
-      "answer": ""
+      "question": "¿Tienen opciones sin azúcar o sin lactosa?",
+      "answer": "Sí, contamos con opciones especiales para diferentes necesidades y preferencias."
     },
     {
       "id": "6b65bae3-263a-4db7-a846-a9a8c220aeed",
-      "question": "",
-      "answer": ""
+      "question": "¿Cuánto tarda en llegar mi pedido?",
+      "answer": "El tiempo de entrega depende de tu ubicación y de la cantidad de pedidos en ese momento."
     }
   ]
 }
