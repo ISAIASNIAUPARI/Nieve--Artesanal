@@ -1,6 +1,14 @@
 export interface ImageValue {
   src: string
   alt?: string
+  /** Punto focal en % (0-100) usado como object-position al recortar con object-fit:cover. */
+  focalX?: number
+  focalY?: number
+}
+
+/** object-position para un ImageValue — 50% 50% (centro) si no tiene punto focal guardado. */
+export function focalPosition(img?: { focalX?: number; focalY?: number } | null): string {
+  return `${img?.focalX ?? 50}% ${img?.focalY ?? 50}%`
 }
 
 export interface VideoValue {
@@ -299,6 +307,8 @@ export interface CtaBannerData {
   heading: string
   description: string
   buttons: Button[]
+  /** Fondo opcional detrás del texto (16:9). */
+  image?: ImageValue
 }
 export interface MenuGridData {
   type: 'menu-grid'
@@ -309,6 +319,8 @@ export interface TextBlockData {
   type: 'text-block'
   heading: string
   paragraphs: TextParagraph[]
+  /** Imagen opcional sobre el texto (3:2). */
+  image?: ImageValue
 }
 export interface PhotoGalleryData {
   type: 'photo-gallery'

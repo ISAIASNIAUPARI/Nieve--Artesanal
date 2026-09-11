@@ -1,11 +1,14 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { focalPosition } from '@/lib/types'
 import { uploadMediaToCloudinary } from '@/lib/upload'
+import FocalPointPicker from '../admin/FocalPointPicker'
 
 /**
  * Imagen con subida a Cloudinary autocontenida (progreso propio). En modo lectura
  * es un <img> normal. En edición: clic → elegir archivo → sube → `onUploaded(url)`.
+ * El icono ⊕ (si hay imagen) abre el selector de punto focal → `onFocalChange(x, y)`.
  * Se usa en las secciones dinámicas (tarjetas de menú, galería…).
  */
 export default function CloudinaryImage({
@@ -13,6 +16,10 @@ export default function CloudinaryImage({
   alt,
   edit,
   onUploaded,
+  focalX,
+  focalY,
+  aspectRatio = 1,
+  onFocalChange,
   wrapperStyle,
   imgStyle,
 }: {
@@ -20,13 +27,20 @@ export default function CloudinaryImage({
   alt?: string
   edit?: boolean
   onUploaded?: (url: string) => void
+  focalX?: number
+  focalY?: number
+  /** ancho/alto del recorte real en la página (ej. 4/3, 1, 16/9) — para el selector de punto focal. */
+  aspectRatio?: number
+  onFocalChange?: (x: number, y: number) => void
   wrapperStyle?: React.CSSProperties
   imgStyle?: React.CSSProperties
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [pct, setPct] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const uploading = pct !== null
+  const objectPosition = focalPosition({ focalX, focalY })
 
   async function handleFile(file: File) {
     setError(null)
@@ -42,7 +56,7 @@ export default function CloudinaryImage({
   }
 
   const img = src ? (
-    <img src={src} alt={alt || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', ...imgStyle }} />
+    <img src={src} alt={alt || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition, display: 'block', ...imgStyle }} />
   ) : (
     <div
       style={{
@@ -122,6 +136,34 @@ export default function CloudinaryImage({
           🖼️ {src ? 'Cambiar' : 'Subir'} foto
         </div>
       )}
+
+      {src && !uploading && onFocalChange && (
+        <button
+          type="button"
+          title="Elegir punto focal"
+          onClick={(e) => {
+            e.stopPropagation()
+            setPickerOpen(true)
+          }}
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            width: 26,
+            height: 26,
+            borderRadius: '50%',
+            border: '1px solid #ffffff88',
+            background: '#000000aa',
+            color: '#fff',
+            fontSize: 14,
+            lineHeight: 1,
+            cursor: 'pointer',
+          }}
+        >
+          ⊕
+        </button>
+      )}
+
       {error && (
         <div
           style={{
@@ -150,6 +192,20 @@ export default function CloudinaryImage({
           e.target.value = ''
         }}
       />
+
+      {pickerOpen && src && (
+        <FocalPointPicker
+          src={src}
+          aspectRatio={aspectRatio}
+          focalX={focalX}
+          focalY={focalY}
+          onApply={(x, y) => {
+            onFocalChange?.(x, y)
+            setPickerOpen(false)
+          }}
+          onCancel={() => setPickerOpen(false)}
+        />
+      )}
     </div>
   )
 }

@@ -12,10 +12,11 @@ interface HeroProps {
   onChange?: (field: keyof HeroSectionData, value: string) => void
   onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof HeroSectionData, file: File) => void
+  onFocalChange?: (field: keyof HeroSectionData, x: number, y: number) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function Hero({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: HeroProps) {
+export default function Hero({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: HeroProps) {
   if (!data) return null
 
   return (
@@ -26,8 +27,11 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
         edit={edit}
         onFile={(file) => onImageChange?.('backgroundImage', file)}
         upload={uploads?.backgroundImage}
+        focalX={data.backgroundImage?.focalX}
+        focalY={data.backgroundImage?.focalY}
+        aspectRatio={16 / 9}
+        onFocalChange={(x, y) => onFocalChange?.('backgroundImage', x, y)}
         wrapperStyle={{ position: 'absolute', inset: 0 }}
-        imgStyle={{ objectPosition: 'center 30%' }}
       />
       <div
         style={{

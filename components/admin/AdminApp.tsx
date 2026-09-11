@@ -21,7 +21,7 @@ import Footer from '@/components/Footer'
 import DynamicSection from '@/components/sections/DynamicSection'
 
 function AdminSite() {
-  const { content, layout, dynamic, setField, setButtons, setDynamic, uploadMedia, uploads } = useEdit()
+  const { content, layout, dynamic, setField, setButtons, setFocal, setDynamic, uploadMedia, uploads } = useEdit()
 
   // uploads viene con claves `${section}.${field}`; cada componente quiere solo su sección.
   const sectionUploads = (section: SectionKey): Record<string, MediaUploadStatus> => {
@@ -41,6 +41,7 @@ function AdminSite() {
         onChange={(field, value) => setField('hero', field, value)}
         onButtonsChange={(buttons) => setButtons('hero', buttons)}
         onImageChange={(field, file) => uploadMedia('hero', field, file, 'image')}
+        onFocalChange={(field, x, y) => setFocal('hero', field, x, y)}
         uploads={sectionUploads('hero')}
       />
     ),
@@ -51,6 +52,7 @@ function AdminSite() {
         onChange={(field, value) => setField('about', field, value)}
         onButtonsChange={(buttons) => setButtons('about', buttons)}
         onImageChange={(field, file) => uploadMedia('about', field, file, 'image')}
+        onFocalChange={(field, x, y) => setFocal('about', field, x, y)}
         uploads={sectionUploads('about')}
       />
     ),
@@ -61,6 +63,7 @@ function AdminSite() {
         onChange={(field, value) => setField('flavors', field, value)}
         onButtonsChange={(buttons) => setButtons('flavors', buttons)}
         onImageChange={(field, file) => uploadMedia('flavors', field, file, 'image')}
+        onFocalChange={(field, x, y) => setFocal('flavors', field, x, y)}
         uploads={sectionUploads('flavors')}
       />
     ),

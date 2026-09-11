@@ -33,6 +33,8 @@ interface EditContextValue {
   setField: (section: SectionKey, field: string, value: string) => void
   setObjectField: (section: SectionKey, field: string, prop: string, value: string) => void
   setButtons: (section: SectionKey, buttons: Button[]) => void
+  /** Guarda el punto focal (0-100, 0-100) de una imagen de una sección base. */
+  setFocal: (section: SectionKey, field: string, x: number, y: number) => void
   setLayoutSections: (sections: LayoutSection[]) => void
   /** Reemplaza el contenido completo de una sección dinámica. */
   setDynamic: (id: string, data: DynamicSectionData) => void
@@ -99,6 +101,17 @@ export function EditProvider({
   const setButtons = useCallback(
     (section: SectionKey, buttons: Button[]) => {
       setContent((prev) => ({ ...prev, [section]: { ...prev[section], buttons } }))
+      markDirty(section)
+    },
+    [markDirty]
+  )
+
+  const setFocal = useCallback(
+    (section: SectionKey, field: string, x: number, y: number) => {
+      setContent((prev) => {
+        const current = ((prev[section] as Record<string, unknown>)[field] as Record<string, unknown>) || {}
+        return { ...prev, [section]: { ...prev[section], [field]: { ...current, focalX: x, focalY: y } } }
+      })
       markDirty(section)
     },
     [markDirty]
@@ -228,6 +241,7 @@ export function EditProvider({
       setField,
       setObjectField,
       setButtons,
+      setFocal,
       setLayoutSections,
       setDynamic,
       registerCreatedSection,
@@ -249,6 +263,7 @@ export function EditProvider({
       setField,
       setObjectField,
       setButtons,
+      setFocal,
       setLayoutSections,
       setDynamic,
       registerCreatedSection,

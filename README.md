@@ -52,7 +52,11 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
 - `app/api/admin/` — login, logout, guardado (commit a GitHub vía `lib/github.ts`) y
   `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
 - `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
-- `components/editable/` — `EditableText` y `EditableImage`, las piezas reutilizables del editor
+- `components/editable/` — `EditableText`, `EditableImage` y `CloudinaryImage` (esta última con
+  subida propia, para las secciones dinámicas), las piezas reutilizables del editor
+- `components/admin/FocalPointPicker.tsx` — selector de punto focal (icono ⊕ sobre cualquier
+  imagen en edición): guarda `focalX`/`focalY` (0-100) en el JSON de esa imagen; si no existen,
+  el recorte usa el centro (50/50), igual que antes
 - `components/sections/` — piezas compartidas y las 5 plantillas de sección nueva
   (`CtaBanner`, `MenuGrid`, `TextBlock`, `PhotoGallery`, `Faq`, más `DynamicSection` que
   elige cuál renderizar por el campo `type`)

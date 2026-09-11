@@ -46,6 +46,10 @@ export default function MenuGrid({
               alt={card.image?.alt || card.name}
               edit={edit}
               onUploaded={(url) => patch(card.id, { image: { ...card.image, src: url } })}
+              focalX={card.image?.focalX}
+              focalY={card.image?.focalY}
+              aspectRatio={1}
+              onFocalChange={(x, y) => patch(card.id, { image: { ...card.image, focalX: x, focalY: y } })}
               wrapperStyle={{ aspectRatio: '4/3' }}
             />
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>

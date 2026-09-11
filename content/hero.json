@@ -24,6 +24,8 @@
   ],
   "backgroundImage": {
     "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/hero-vitrina-mix",
-    "alt": "Selección de helados, tortas y galletas artesanales"
+    "alt": "Selección de helados, tortas y galletas artesanales",
+    "focalX": 50,
+    "focalY": 30
   }
 }

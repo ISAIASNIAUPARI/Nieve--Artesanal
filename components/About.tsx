@@ -12,10 +12,11 @@ interface AboutProps {
   onChange?: (field: keyof AboutSectionData, value: string) => void
   onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof AboutSectionData, file: File) => void
+  onFocalChange?: (field: keyof AboutSectionData, x: number, y: number) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function About({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: AboutProps) {
+export default function About({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: AboutProps) {
   if (!data) return null
 
   return (
@@ -77,6 +78,10 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
         edit={edit}
         onFile={(file) => onImageChange?.('image', file)}
         upload={uploads?.image}
+        focalX={data.image?.focalX}
+        focalY={data.image?.focalY}
+        aspectRatio={4 / 3}
+        onFocalChange={(x, y) => onFocalChange?.('image', x, y)}
         wrapperStyle={{ borderRadius: 16, overflow: 'hidden', aspectRatio: '4/3' }}
       />
     </section>
