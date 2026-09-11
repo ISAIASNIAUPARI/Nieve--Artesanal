@@ -42,6 +42,20 @@ html {
   }
 }
 
+/* Flash de confirmación al reordenar una sección en "Organizar página" (LayoutPanel).
+   Sube rápido a verde y baja lento a transparente — un "pulse" discreto, no un parpadeo. */
+@keyframes sectionMoveFlash {
+  0% {
+    background-color: transparent;
+  }
+  15% {
+    background-color: #8fd69455;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
 /* Placeholder de los campos editables del /admin (el contenido de un
    contentEditable no puede pasarse como children de React, así que el
    placeholder se resuelve por CSS en vez de por un valor por defecto en JSX). */
