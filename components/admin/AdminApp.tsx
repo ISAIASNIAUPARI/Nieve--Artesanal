@@ -97,7 +97,7 @@ function AdminSite() {
           edit
           onChange={(field, value) => setField('siteSettings', field, value)}
         />
-        {layout.sections.map((s) => {
+        {layout.sections.map((s, i) => {
           let body: React.ReactNode = null
           if (isBaseSectionId(s.id)) {
             body = editors[s.id]
@@ -132,7 +132,32 @@ function AdminSite() {
                   🚫 «{s.label}» está oculta en el sitio público — la puedes seguir editando aquí.
                 </div>
               )}
-              <div style={{ opacity: s.visible ? 1 : 0.5 }}>{body}</div>
+              <div style={{ opacity: s.visible ? 1 : 0.5, position: 'relative' }}>
+                <span
+                  title={`Posición ${i + 1} de ${layout.sections.length}`}
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    zIndex: 20,
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    background: '#1c1310cc',
+                    color: '#fff',
+                    fontFamily: 'system-ui, sans-serif',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {i + 1}
+                </span>
+                {body}
+              </div>
             </div>
           )
         })}

@@ -42,6 +42,22 @@ const iconBtn = (enabled: boolean): React.CSSProperties => ({
   lineHeight: 1,
 })
 
+/** Número de posición (1, 2, 3…) — gris, discreto, no compite con el nombre de la sección. */
+const positionBadge: React.CSSProperties = {
+  flexShrink: 0,
+  width: 22,
+  height: 22,
+  borderRadius: '50%',
+  border: '1px solid #ffffff26',
+  background: '#ffffff0f',
+  color: '#ffffff88',
+  fontSize: 11,
+  fontWeight: 700,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
 /**
  * "Organizar página": reordenar, ocultar/mostrar, crear y eliminar secciones.
  * El orden/visibilidad se guarda con "Guardar" en la barra; crear y eliminar
@@ -135,6 +151,8 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
                   opacity: deleting === s.id ? 0.4 : s.visible ? 1 : 0.55,
                 }}
               >
+                <span style={positionBadge} title={`Posición ${i + 1}`}>{i + 1}</span>
+
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button type="button" style={iconBtn(i > 0)} onClick={() => move(i, -1)} disabled={i === 0} title="Subir">
                     ↑
