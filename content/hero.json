@@ -10,25 +10,9 @@
       "hrefType": "anchor",
       "mobileZone": "top-left",
       "mobileX": 8.716564484458559,
-      "mobileY": 67.32996367553267
-    },
-    {
-      "id": "btn-1",
-      "text": "Ver opciones",
-      "href": "#flavors",
-      "hrefType": "anchor",
-      "mobileZone": "top-right",
-      "mobileX": 6.978580250459559,
-      "mobileY": 85.16493986175817
-    },
-    {
-      "id": "8e3be35d-9733-4054-a899-f965b4972cd7",
-      "text": "link ubicación ",
-      "href": "#hero",
-      "hrefType": "url",
-      "mobileZone": "top-center",
-      "mobileX": 8.235300645471261,
-      "mobileY": 76.12666767210682
+      "mobileY": 67.32996367553267,
+      "desktopX": 8.458267132147599,
+      "desktopY": 36.748694127630834
     }
   ],
   "backgroundImage": {

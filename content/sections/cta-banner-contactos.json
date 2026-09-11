@@ -8,7 +8,9 @@
       "id": "9c2cb76b-5c4a-4a3d-97d3-6cb029dcaa1d",
       "text": "0998381419",
       "href": "#hero",
-      "hrefType": "phone"
+      "hrefType": "phone",
+      "desktopX": 41.55555725097656,
+      "desktopY": 32.0782389094754
     }
   ]
 }
