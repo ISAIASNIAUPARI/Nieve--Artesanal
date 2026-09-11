@@ -7,19 +7,22 @@
       "id": "btn-2",
       "text": "Cómo llegar",
       "href": "#location",
-      "hrefType": "anchor"
+      "hrefType": "anchor",
+      "mobileZone": "top-left"
     },
     {
       "id": "btn-1",
       "text": "Ver opciones",
       "href": "#flavors",
-      "hrefType": "anchor"
+      "hrefType": "anchor",
+      "mobileZone": "top-right"
     },
     {
       "id": "8e3be35d-9733-4054-a899-f965b4972cd7",
       "text": "link ubicación ",
       "href": "#hero",
-      "hrefType": "url"
+      "hrefType": "url",
+      "mobileZone": "top-center"
     }
   ],
   "backgroundImage": {
