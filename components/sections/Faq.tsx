@@ -14,10 +14,13 @@ export default function Faq({
   id: string
   data: FaqData
   edit?: boolean
-  onChange?: (data: FaqData) => void
+  onChange?: (data: FaqData | ((prev: FaqData) => FaqData)) => void
 }) {
   const items = data.items ?? []
-  const set = (next: FaqItem[]) => onChange?.({ ...data, items: next })
+
+  // Parte siempre de las preguntas más recientes (ver el comentario en PhotoGallery.tsx).
+  const setItems = (updater: (items: FaqItem[]) => FaqItem[]) =>
+    onChange?.((prev) => ({ ...prev, items: updater(prev.items ?? []) }))
 
   if (!edit && items.length === 0 && !data.heading) return null
 
@@ -26,7 +29,7 @@ export default function Faq({
       <SectionHeading
         heading={data.heading}
         edit={edit}
-        onChange={(v) => onChange?.({ ...data, heading: v })}
+        onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
         eyebrow="Preguntas frecuentes"
       />
       <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -40,7 +43,7 @@ export default function Faq({
                 as="h3"
                 edit={edit}
                 value={item.question}
-                onChange={(v) => set(items.map((x) => (x.id === item.id ? { ...x, question: v } : x)))}
+                onChange={(v) => setItems((qs) => qs.map((x) => (x.id === item.id ? { ...x, question: v } : x)))}
                 placeholder="Pregunta"
                 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--ink)', flex: 1 }}
               />
@@ -49,8 +52,8 @@ export default function Faq({
                   index={i}
                   count={items.length}
                   label="esta pregunta"
-                  onMove={(dir) => set(moved(items, i, dir))}
-                  onRemove={() => set(items.filter((x) => x.id !== item.id))}
+                  onMove={(dir) => setItems((qs) => moved(qs, i, dir))}
+                  onRemove={() => setItems((qs) => qs.filter((x) => x.id !== item.id))}
                 />
               )}
             </div>
@@ -58,14 +61,14 @@ export default function Faq({
               as="p"
               edit={edit}
               value={item.answer}
-              onChange={(v) => set(items.map((x) => (x.id === item.id ? { ...x, answer: v } : x)))}
+              onChange={(v) => setItems((qs) => qs.map((x) => (x.id === item.id ? { ...x, answer: v } : x)))}
               placeholder="Respuesta"
               style={{ margin: '10px 0 0', fontSize: 16, lineHeight: 1.7, color: 'var(--ink-soft)' }}
             />
           </div>
         ))}
         {edit && (
-          <AddButton onClick={() => set([...items, { id: newItemId(), question: '', answer: '' }])}>
+          <AddButton onClick={() => setItems((qs) => [...qs, { id: newItemId(), question: '', answer: '' }])}>
             + Añadir pregunta
           </AddButton>
         )}

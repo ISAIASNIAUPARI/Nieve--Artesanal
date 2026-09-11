@@ -36,8 +36,14 @@ interface EditContextValue {
   /** Guarda el punto focal (0-100, 0-100) de una imagen de una sección base. */
   setFocal: (section: SectionKey, field: string, x: number, y: number) => void
   setLayoutSections: (sections: LayoutSection[]) => void
-  /** Reemplaza el contenido completo de una sección dinámica. */
-  setDynamic: (id: string, data: DynamicSectionData) => void
+  /**
+   * Reemplaza el contenido de una sección dinámica. Acepta un valor o, mejor, un
+   * actualizador `(prev) => next` — así la actualización parte siempre del estado
+   * más reciente en vez de un `data` capturado en el cierre del componente, que
+   * puede quedar desactualizado si dos ediciones (ej. dos fotos de una galería)
+   * ocurren antes de que React vuelva a renderizar entre una y otra.
+   */
+  setDynamic: (id: string, updater: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => void
   /** Registra una sección recién creada por /api/admin/create-section (ya commiteada). */
   registerCreatedSection: (id: string, data: DynamicSectionData, layout: LayoutSection[]) => void
   /** Quita una sección recién borrada por /api/admin/delete-section (ya commiteada). */
@@ -169,11 +175,18 @@ export function EditProvider({
     setLastSaved(null)
   }, [])
 
-  const setDynamic = useCallback((id: string, data: DynamicSectionData) => {
-    setDynamicMap((prev) => ({ ...prev, [id]: data }))
-    setDirtyDynamic((prev) => new Set(prev).add(id))
-    setLastSaved(null)
-  }, [])
+  const setDynamic = useCallback(
+    (id: string, updater: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => {
+      setDynamicMap((prev) => {
+        const current = prev[id]
+        const next = typeof updater === 'function' ? (updater as (p: DynamicSectionData) => DynamicSectionData)(current) : updater
+        return { ...prev, [id]: next }
+      })
+      setDirtyDynamic((prev) => new Set(prev).add(id))
+      setLastSaved(null)
+    },
+    []
+  )
 
   const registerCreatedSection = useCallback(
     (id: string, data: DynamicSectionData, nextLayout: LayoutSection[]) => {

@@ -15,7 +15,7 @@ export default function CtaBanner({
   id: string
   data: CtaBannerData
   edit?: boolean
-  onChange?: (data: CtaBannerData) => void
+  onChange?: (data: CtaBannerData | ((prev: CtaBannerData) => CtaBannerData)) => void
 }) {
   return (
     <section id={id} style={{ position: 'relative', padding: '80px 6vw', background: 'var(--accent)', color: '#fff', overflow: 'hidden' }}>
@@ -24,12 +24,15 @@ export default function CtaBanner({
           src={data.image?.src}
           alt={data.image?.alt}
           edit={edit}
-          onUploaded={(url) => onChange?.({ ...data, image: { ...data.image, src: url } })}
+          onUploaded={(url) => onChange?.((prev) => ({ ...prev, image: { ...prev.image, src: url } }))}
           focalX={data.image?.focalX}
           focalY={data.image?.focalY}
           aspectRatio={16 / 9}
           onFocalChange={(x, y) =>
-            onChange?.({ ...data, image: { src: data.image?.src ?? '', alt: data.image?.alt, focalX: x, focalY: y } })
+            onChange?.((prev) => ({
+              ...prev,
+              image: { src: prev.image?.src ?? '', alt: prev.image?.alt, focalX: x, focalY: y },
+            }))
           }
           wrapperStyle={{ position: 'absolute', inset: 0 }}
         />
@@ -54,7 +57,7 @@ export default function CtaBanner({
           as="h2"
           edit={edit}
           value={data.heading}
-          onChange={(v) => onChange?.({ ...data, heading: v })}
+          onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
           placeholder="Título del banner"
           style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 'clamp(26px,3.4vw,40px)', margin: 0, color: '#fff' }}
         />
@@ -62,7 +65,7 @@ export default function CtaBanner({
           as="p"
           edit={edit}
           value={data.description}
-          onChange={(v) => onChange?.({ ...data, description: v })}
+          onChange={(v) => onChange?.((prev) => ({ ...prev, description: v }))}
           placeholder="Texto de apoyo"
           style={{ fontSize: 17, lineHeight: 1.6, margin: 0, color: '#fff', opacity: 0.95 }}
         />
@@ -70,7 +73,7 @@ export default function CtaBanner({
         {edit && onChange && (
           <ButtonsEditor
             buttons={data.buttons ?? []}
-            onChange={(b) => onChange({ ...data, buttons: b })}
+            onChange={(b) => onChange((prev) => ({ ...prev, buttons: b }))}
             sectionLabel="Banner"
             max={2}
           />

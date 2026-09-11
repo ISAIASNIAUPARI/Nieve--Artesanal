@@ -15,18 +15,28 @@ export default function MenuGrid({
   id: string
   data: MenuGridData
   edit?: boolean
-  onChange?: (data: MenuGridData) => void
+  onChange?: (data: MenuGridData | ((prev: MenuGridData) => MenuGridData)) => void
 }) {
   const items = data.items ?? []
-  const set = (next: MenuCard[]) => onChange?.({ ...data, items: next })
+
+  // Parte siempre del array más reciente (ver el mismo comentario en PhotoGallery.tsx)
+  // en vez de el `items` capturado en este render, para que dos ediciones seguidas
+  // (ej. subir una foto y tocar otra tarjeta) no se pisen entre sí.
+  const setItems = (updater: (items: MenuCard[]) => MenuCard[]) =>
+    onChange?.((prev) => ({ ...prev, items: updater(prev.items ?? []) }))
+
   const patch = (cardId: string, p: Partial<MenuCard>) =>
-    set(items.map((c) => (c.id === cardId ? { ...c, ...p } : c)))
+    setItems((cards) => cards.map((c) => (c.id === cardId ? { ...c, ...p } : c)))
 
   if (!edit && items.length === 0 && !data.heading) return null
 
   return (
     <SectionShell id={id}>
-      <SectionHeading heading={data.heading} edit={edit} onChange={(v) => onChange?.({ ...data, heading: v })} />
+      <SectionHeading
+        heading={data.heading}
+        edit={edit}
+        onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
+      />
       <div
         style={{
           maxWidth: 1000,
@@ -83,8 +93,8 @@ export default function MenuGrid({
                     index={i}
                     count={items.length}
                     label={`la tarjeta "${card.name || 'sin nombre'}"`}
-                    onMove={(dir) => set(moved(items, i, dir))}
-                    onRemove={() => set(items.filter((x) => x.id !== card.id))}
+                    onMove={(dir) => setItems((cards) => moved(cards, i, dir))}
+                    onRemove={() => setItems((cards) => cards.filter((x) => x.id !== card.id))}
                   />
                 </div>
               )}
@@ -96,7 +106,7 @@ export default function MenuGrid({
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
           <AddButton
             onClick={() =>
-              set([...items, { id: newItemId(), image: { src: '' }, name: '', price: '', description: '' }])
+              setItems((cards) => [...cards, { id: newItemId(), image: { src: '' }, name: '', price: '', description: '' }])
             }
           >
             + Añadir tarjeta

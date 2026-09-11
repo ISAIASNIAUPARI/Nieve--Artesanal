@@ -15,27 +15,37 @@ export default function TextBlock({
   id: string
   data: TextBlockData
   edit?: boolean
-  onChange?: (data: TextBlockData) => void
+  onChange?: (data: TextBlockData | ((prev: TextBlockData) => TextBlockData)) => void
 }) {
   const paragraphs = data.paragraphs ?? []
-  const set = (next: TextParagraph[]) => onChange?.({ ...data, paragraphs: next })
+
+  // Parte siempre de los párrafos más recientes (ver el comentario en PhotoGallery.tsx).
+  const setParagraphs = (updater: (paragraphs: TextParagraph[]) => TextParagraph[]) =>
+    onChange?.((prev) => ({ ...prev, paragraphs: updater(prev.paragraphs ?? []) }))
 
   if (!edit && paragraphs.length === 0 && !data.heading) return null
 
   return (
     <SectionShell id={id}>
-      <SectionHeading heading={data.heading} edit={edit} onChange={(v) => onChange?.({ ...data, heading: v })} />
+      <SectionHeading
+        heading={data.heading}
+        edit={edit}
+        onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
+      />
       {(edit || data.image?.src) && (
         <CloudinaryImage
           src={data.image?.src}
           alt={data.image?.alt}
           edit={edit}
-          onUploaded={(url) => onChange?.({ ...data, image: { ...data.image, src: url } })}
+          onUploaded={(url) => onChange?.((prev) => ({ ...prev, image: { ...prev.image, src: url } }))}
           focalX={data.image?.focalX}
           focalY={data.image?.focalY}
           aspectRatio={3 / 2}
           onFocalChange={(x, y) =>
-            onChange?.({ ...data, image: { src: data.image?.src ?? '', alt: data.image?.alt, focalX: x, focalY: y } })
+            onChange?.((prev) => ({
+              ...prev,
+              image: { src: prev.image?.src ?? '', alt: prev.image?.alt, focalX: x, focalY: y },
+            }))
           }
           wrapperStyle={{ maxWidth: 680, margin: '0 auto 32px', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}
         />
@@ -47,7 +57,7 @@ export default function TextBlock({
               as="p"
               edit={edit}
               value={p.text}
-              onChange={(v) => set(paragraphs.map((x) => (x.id === p.id ? { ...x, text: v } : x)))}
+              onChange={(v) => setParagraphs((paras) => paras.map((x) => (x.id === p.id ? { ...x, text: v } : x)))}
               placeholder="Escribe un párrafo…"
               style={{ flex: 1, fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
             />
@@ -56,14 +66,16 @@ export default function TextBlock({
                 index={i}
                 count={paragraphs.length}
                 label="este párrafo"
-                onMove={(dir) => set(moved(paragraphs, i, dir))}
-                onRemove={() => set(paragraphs.filter((x) => x.id !== p.id))}
+                onMove={(dir) => setParagraphs((paras) => moved(paras, i, dir))}
+                onRemove={() => setParagraphs((paras) => paras.filter((x) => x.id !== p.id))}
               />
             )}
           </div>
         ))}
         {edit && (
-          <AddButton onClick={() => set([...paragraphs, { id: newItemId(), text: '' }])}>+ Añadir párrafo</AddButton>
+          <AddButton onClick={() => setParagraphs((paras) => [...paras, { id: newItemId(), text: '' }])}>
+            + Añadir párrafo
+          </AddButton>
         )}
       </div>
     </SectionShell>
