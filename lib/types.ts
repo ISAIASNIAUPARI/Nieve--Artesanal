@@ -31,6 +31,15 @@ export interface Button {
   hrefType: HrefType
   /** Si no está definido, el botón usa el comportamiento normal (apilado/en fila) en móvil. */
   mobileZone?: MobileZone
+  /**
+   * Posición libre en desktop (estilo Wix), en % (0-100) del área de la sección —
+   * `desktopX` desde la izquierda, `desktopY` desde arriba. Independiente de
+   * `mobileZone`: mover un botón en una vista nunca cambia la otra. Si ninguno de
+   * los botones de la sección tiene esto definido, esa sección se ve como
+   * siempre (fila con flexbox).
+   */
+  desktopX?: number
+  desktopY?: number
 }
 
 export const MAX_BUTTONS = 5

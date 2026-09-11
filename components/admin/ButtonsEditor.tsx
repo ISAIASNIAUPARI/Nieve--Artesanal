@@ -168,18 +168,19 @@ export default function ButtonsEditor({
   )
 }
 
-const ZONE_SQUARE = 24
-const ZONE_GAP = 4
+const ZONE_SQUARE = 16
+const ZONE_GAP = 3
 /** Ancho total de la fila de 3 (arriba) — la fila de 2 (abajo) se ajusta a este mismo ancho. */
 const ZONE_ROW_WIDTH = ZONE_SQUARE * 3 + ZONE_GAP * 2
 
 const zoneBtn = (active: boolean): React.CSSProperties => ({
   width: ZONE_SQUARE,
   height: ZONE_SQUARE,
-  borderRadius: 5,
+  borderRadius: 3,
   border: `1px solid ${active ? 'var(--accent)' : '#ffffff3b'}`,
   background: active ? 'var(--accent)' : '#ffffff12',
   cursor: 'pointer',
+  padding: 0,
 })
 
 const zoneOf = (value: MobileZone) => MOBILE_ZONES.find((z) => z.value === value)!
