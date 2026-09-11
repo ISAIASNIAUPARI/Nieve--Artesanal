@@ -5,7 +5,9 @@
     {
       "id": "4e8a8c26-2499-401d-b3c7-1497492e1659",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/x05iwk4nqkknseshb6bn"
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/tanaeolca8fihngrmj6x",
+        "focalX": 50,
+        "focalY": 50
       },
       "caption": ""
     },
@@ -13,22 +15,26 @@
       "id": "0cf81538-a135-4cfc-b25c-007af8dec72f",
       "image": {
         "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/dgwuzqcostfddfyvdw5g",
-        "focalX": 1,
-        "focalY": 49
+        "focalX": 45,
+        "focalY": 44
       },
       "caption": ""
     },
     {
       "id": "a6ebf04e-edf6-408e-a17c-46d5bb382542",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/ce3owiva90qkccsporak"
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/vezyqiou4tqwjepejmgh",
+        "focalX": 64,
+        "focalY": 32
       },
       "caption": ""
     },
     {
       "id": "dfffebec-fd52-47a0-84b3-fc93e162c3f0",
       "image": {
-        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/gnpz57xhzun9wrssc1ao"
+        "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/gnpz57xhzun9wrssc1ao",
+        "focalX": 74,
+        "focalY": 50
       },
       "caption": ""
     }
