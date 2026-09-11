@@ -1,22 +1,19 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import type {
-  Button,
-  DynamicSectionData,
-  HomePageData,
-  LayoutSection,
-  MediaUploadStatus,
-  PageLayout,
-  SectionKey,
-} from '@/lib/types'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { Button, DynamicSectionData, HomePageData, LayoutSection, MediaUploadStatus, PageLayout, SectionKey } from '@/lib/types'
 import { CONTENT_FILES, PAGE_LAYOUT_FILE, SECTION_LABELS, validateButtons } from '@/lib/types'
 import { uploadMediaToCloudinary, type MediaKind } from '@/lib/upload'
+import { EditContext, type EditContextValue, type SaveResult } from './EditContext'
 
-interface SaveResult {
-  sha: string
-  htmlUrl: string
-}
+// useEdit/useEditOptional viven en ./EditContext (archivo liviano, sin esta
+// lógica de guardado/subida) — se re-exportan aquí solo para no romper los
+// imports existentes de los componentes EXCLUSIVOS del admin (Toolbar,
+// LayoutPanel, NewSectionModal, AdminApp, ButtonsEditor). Cualquier
+// componente que TAMBIÉN se renderice en el sitio público debe importarlos
+// de './EditContext' directo, nunca de aquí — ver el comentario en ese
+// archivo.
+export { useEdit, useEditOptional } from './EditContext'
 
 interface SaveFile {
   path: string
@@ -24,51 +21,6 @@ interface SaveFile {
 }
 
 type DynamicMap = Record<string, DynamicSectionData>
-
-interface EditContextValue {
-  content: HomePageData
-  layout: PageLayout
-  dynamic: DynamicMap
-  isDirty: boolean
-  setField: (section: SectionKey, field: string, value: string) => void
-  setObjectField: (section: SectionKey, field: string, prop: string, value: string) => void
-  setButtons: (section: SectionKey, buttons: Button[]) => void
-  /** Guarda el punto focal (0-100, 0-100) de una imagen de una sección base. */
-  setFocal: (section: SectionKey, field: string, x: number, y: number) => void
-  setLayoutSections: (sections: LayoutSection[]) => void
-  /**
-   * Reemplaza el contenido de una sección dinámica. Acepta un valor o, mejor, un
-   * actualizador `(prev) => next` — así la actualización parte siempre del estado
-   * más reciente en vez de un `data` capturado en el cierre del componente, que
-   * puede quedar desactualizado si dos ediciones (ej. dos fotos de una galería)
-   * ocurren antes de que React vuelva a renderizar entre una y otra.
-   */
-  setDynamic: (id: string, updater: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => void
-  /** Registra una sección recién creada por /api/admin/create-section (ya commiteada). */
-  registerCreatedSection: (id: string, data: DynamicSectionData, layout: LayoutSection[]) => void
-  /** Quita una sección recién borrada por /api/admin/delete-section (ya commiteada). */
-  unregisterDeletedSection: (id: string, layout: LayoutSection[]) => void
-  /** Devuelve true si la subida terminó bien (false si falló) — para abrir el punto focal tras soltar un archivo. */
-  uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<boolean>
-  uploads: Record<string, MediaUploadStatus>
-  /**
-   * Tipo del archivo que el usuario está arrastrando sobre la página del admin
-   * ('image' | 'video' | null) — para resaltar solo los contenedores que lo aceptan.
-   * null también cuando el navegador no expone el tipo todavía o es de otro tipo;
-   * en ese caso no se resalta nada y el contenedor que reciba el drop muestra su
-   * propio error al soltar.
-   */
-  isDraggingFile: 'image' | 'video' | null
-  saving: boolean
-  saveError: string | null
-  lastSaved: SaveResult | null
-  save: () => Promise<void>
-  /** Vista previa del admin — no se guarda, es puramente de la sesión del editor. */
-  viewMode: 'desktop' | 'mobile'
-  setViewMode: (mode: 'desktop' | 'mobile') => void
-}
-
-const EditContext = createContext<EditContextValue | null>(null)
 
 export function EditProvider({
   initialContent,
@@ -357,19 +309,4 @@ export function EditProvider({
   )
 
   return <EditContext.Provider value={value}>{children}</EditContext.Provider>
-}
-
-export function useEdit() {
-  const ctx = useContext(EditContext)
-  if (!ctx) throw new Error('useEdit debe usarse dentro de <EditProvider>')
-  return ctx
-}
-
-/**
- * Igual que useEdit() pero devuelve null en vez de lanzar cuando no hay <EditProvider>
- * — para componentes como EditableImage/CloudinaryImage que también se renderizan
- * en el sitio público (fuera del admin), donde no hay proveedor.
- */
-export function useEditOptional() {
-  return useContext(EditContext)
 }

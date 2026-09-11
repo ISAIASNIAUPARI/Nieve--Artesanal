@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useEditOptional } from './admin/EditProvider'
+import { useEditOptional } from './admin/EditContext'
 
 const MOBILE_BREAKPOINT = '(max-width: 768px)'
 

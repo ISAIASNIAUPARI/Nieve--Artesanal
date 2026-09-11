@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { Button, MediaUploadStatus, VideoSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import SectionButtons from './sections/SectionButtons'
-import ButtonsEditor from './admin/ButtonsEditor'
-import { useEditOptional } from './admin/EditProvider'
+import dynamic from 'next/dynamic'
+
+// Solo se pinta en /admin — cargado aparte para que el sitio público nunca
+// descargue su código (ni el de @dnd-kit, del que depende SectionButtons).
+const ButtonsEditor = dynamic(() => import('./admin/ButtonsEditor'), { ssr: false })
+import { useEditOptional } from './admin/EditContext'
 import { useIsMobileView } from './useIsMobileView'
 
 interface VideoSectionProps {

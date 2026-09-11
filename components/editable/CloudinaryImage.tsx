@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { focalPosition } from '@/lib/types'
-import { uploadMediaToCloudinary } from '@/lib/upload'
-import { useEditOptional } from '../admin/EditProvider'
-import FocalPointPicker from '../admin/FocalPointPicker'
+import { useEditOptional } from '../admin/EditContext'
+
+// Carga diferida — ver el mismo comentario en EditableImage.tsx.
+const FocalPointPicker = dynamic(() => import('../admin/FocalPointPicker'), { ssr: false })
 
 /**
  * Imagen con subida a Cloudinary autocontenida (progreso propio). En modo lectura
@@ -66,6 +68,11 @@ export default function CloudinaryImage({
     setError(null)
     setPct(0)
     try {
+      // import() en vez de un import estático arriba del archivo — este
+      // componente se usa en secciones que SÍ se pintan en el sitio público
+      // (galería, menú…), así que el cliente de subida a Cloudinary solo se
+      // descarga si de verdad se llega a llamar esta función (edición).
+      const { uploadMediaToCloudinary } = await import('@/lib/upload')
       const url = await uploadMediaToCloudinary(file, 'image', setPct)
       onUploaded?.(url)
       if (opts?.openPickerOnSuccess) setPickerOpen(true)
