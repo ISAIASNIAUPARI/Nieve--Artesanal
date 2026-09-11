@@ -1,10 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import type { MediaUploadStatus } from '@/lib/types'
 import { focalPosition } from '@/lib/types'
-import { useEditOptional } from '../admin/EditProvider'
-import FocalPointPicker from '../admin/FocalPointPicker'
+import { useEditOptional } from '../admin/EditContext'
+
+// Carga diferida: FocalPointPicker (el modal de "elegir punto focal") solo se
+// pinta cuando pickerOpen es true, y eso solo puede pasar en edición — pero
+// como el import de arriba era estático, su código igual viajaba al sitio
+// público. ssr:false porque es puramente interactivo (arrastrar un punto
+// sobre la imagen), no tiene sentido renderizarlo en el servidor.
+const FocalPointPicker = dynamic(() => import('../admin/FocalPointPicker'), { ssr: false })
 
 interface EditableImageProps {
   src?: string

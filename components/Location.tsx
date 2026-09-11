@@ -4,7 +4,11 @@ import type { Button, LocationSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import ContactForm from './ContactForm'
 import SectionButtons from './sections/SectionButtons'
-import ButtonsEditor from './admin/ButtonsEditor'
+import dynamic from 'next/dynamic'
+
+// Solo se pinta en /admin — cargado aparte para que el sitio público nunca
+// descargue su código (ni el de @dnd-kit, del que depende SectionButtons).
+const ButtonsEditor = dynamic(() => import('./admin/ButtonsEditor'), { ssr: false })
 import { useIsMobileView } from './useIsMobileView'
 
 interface LocationProps {
