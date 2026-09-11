@@ -5,6 +5,9 @@ import type { LayoutSection } from '@/lib/types'
 import { templateTypeOf } from '@/lib/types'
 import { useEdit } from './EditProvider'
 import NewSectionModal from './NewSectionModal'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 const overlay: React.CSSProperties = {
   position: 'fixed',
@@ -58,10 +61,27 @@ const positionBadge: React.CSSProperties = {
   justifyContent: 'center',
 }
 
+/** Asa de arrastre (⠿) — el único punto de la fila que activa el drag; el resto de la
+ * fila (nombre, botones) sigue respondiendo a clics normales sin interferencia. */
+const dragHandle: React.CSSProperties = {
+  flexShrink: 0,
+  color: '#ffffff88',
+  fontSize: 15,
+  padding: '0 2px',
+  touchAction: 'none',
+  userSelect: 'none',
+}
+
 /**
  * "Organizar página": reordenar, ocultar/mostrar, crear y eliminar secciones.
  * El orden/visibilidad se guarda con "Guardar" en la barra; crear y eliminar
  * commitean de inmediato (vía sus propias rutas API).
+ *
+ * El reorden tiene dos caminos, ambos terminan en el mismo `setLayoutSections`:
+ * las flechas ↑↓ de siempre, y arrastrar la fila desde su asa (⠿). Igual que en
+ * ButtonsEditor.tsx, el asa es un elemento aparte — no la fila completa — para
+ * que el resto de la fila (nombre, ojo, eliminar) siga respondiendo a clics
+ * normales sin que se confundan con un intento de arrastre.
  */
 export default function LayoutPanel({ onClose }: { onClose: () => void }) {
   const { layout, setLayoutSections, isDirty, unregisterDeletedSection } = useEdit()
@@ -70,8 +90,9 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Flash verde de confirmación sobre la fila que se acaba de mover con ↑/↓ (puramente
-  // visual — no bloquea nada; el usuario puede seguir haciendo clic mientras dura).
+  // Flash verde de confirmación sobre la fila que se acaba de mover (con ↑/↓ o
+  // arrastrando) — puramente visual, no bloquea nada; el usuario puede seguir
+  // haciendo clic mientras dura.
   const [movedId, setMovedId] = useState<string | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -81,17 +102,32 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
     }
   }, [])
 
+  const flash = (id: string) => {
+    setMovedId(id)
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    flashTimer.current = setTimeout(() => setMovedId(null), 2000)
+  }
+
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir
     if (target < 0 || target >= sections.length) return
     const next = [...sections]
     ;[next[index], next[target]] = [next[target], next[index]]
     setLayoutSections(next)
+    flash(sections[index].id)
+  }
 
-    const movedSectionId = sections[index].id
-    setMovedId(movedSectionId)
-    if (flashTimer.current) clearTimeout(flashTimer.current)
-    flashTimer.current = setTimeout(() => setMovedId(null), 2000)
+  // distance:4 evita que un clic normal en el asa (sin mover el mouse) se
+  // confunda con un arrastre.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return
+    const oldIndex = sections.findIndex((s) => s.id === active.id)
+    const newIndex = sections.findIndex((s) => s.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+    setLayoutSections(arrayMove(sections, oldIndex, newIndex))
+    flash(String(active.id))
   }
 
   const toggle = (id: string) =>
@@ -146,101 +182,30 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
 
         <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={{ margin: '0 0 6px', fontSize: 12, opacity: 0.6 }}>
-            Flechas para el orden · el ojo muestra u oculta · 🗑 elimina las secciones nuevas.
+            Arrastra desde ⠿ o usa las flechas para el orden · el ojo muestra u oculta · 🗑
+            elimina las secciones nuevas.
           </p>
 
           {error && <p style={{ margin: 0, fontSize: 12, color: '#ff8a8a' }}>⚠ {error}</p>}
 
-          {sections.map((s, i) => {
-            const isDynamic = !!templateTypeOf(s.id)
-            return (
-              <div
-                key={s.id}
-                style={{
-                  position: 'relative',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '8px 10px',
-                  borderRadius: 10,
-                  background: s.visible ? '#ffffff10' : '#ffffff06',
-                  border: '1px solid #ffffff1a',
-                  opacity: deleting === s.id ? 0.4 : s.visible ? 1 : 0.55,
-                }}
-              >
-                {movedId === s.id && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      animation: 'sectionMoveFlash 2000ms ease',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )}
-
-                <span style={positionBadge} title={`Posición ${i + 1}`}>{i + 1}</span>
-
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button type="button" style={iconBtn(i > 0)} onClick={() => move(i, -1)} disabled={i === 0} title="Subir">
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    style={iconBtn(i < sections.length - 1)}
-                    onClick={() => move(i, 1)}
-                    disabled={i === sections.length - 1}
-                    title="Bajar"
-                  >
-                    ↓
-                  </button>
-                </div>
-
-                <span style={{ flex: 1, fontSize: 14 }}>
-                  {s.label}
-                  {isDynamic && <span style={{ opacity: 0.4, fontSize: 11 }}> · nueva</span>}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => toggle(s.id)}
-                  title={s.visible ? 'Ocultar' : 'Mostrar'}
-                  style={{
-                    border: '1px solid #ffffff3b',
-                    background: '#ffffff12',
-                    color: '#fff',
-                    borderRadius: 8,
-                    padding: '5px 9px',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
-                >
-                  {s.visible ? '👁' : '🚫'}
-                </button>
-
-                {isDynamic && (
-                  <button
-                    type="button"
-                    onClick={() => remove(s)}
-                    disabled={deleting !== null || isDirty}
-                    title={isDirty ? 'Guarda tus cambios primero' : 'Eliminar sección'}
-                    style={{
-                      border: '1px solid #e0808055',
-                      background: '#ffffff10',
-                      color: '#ff9a9a',
-                      borderRadius: 8,
-                      padding: '5px 9px',
-                      cursor: deleting !== null || isDirty ? 'default' : 'pointer',
-                      fontSize: 12,
-                    }}
-                  >
-                    🗑
-                  </button>
-                )}
-              </div>
-            )
-          })}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+              {sections.map((s, i) => (
+                <SortableSectionRow
+                  key={s.id}
+                  section={s}
+                  index={i}
+                  total={sections.length}
+                  flashing={movedId === s.id}
+                  deleting={deleting}
+                  isDirty={isDirty}
+                  onMove={(dir) => move(i, dir)}
+                  onToggle={() => toggle(s.id)}
+                  onRemove={() => remove(s)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
 
           {heroHidden && (
             <p style={{ margin: '6px 0 0', fontSize: 12, color: '#f5c25a' }}>
@@ -276,6 +241,131 @@ export default function LayoutPanel({ onClose }: { onClose: () => void }) {
       </div>
 
       {newOpen && <NewSectionModal onClose={() => setNewOpen(false)} />}
+    </div>
+  )
+}
+
+function SortableSectionRow({
+  section: s,
+  index: i,
+  total,
+  flashing,
+  deleting,
+  isDirty,
+  onMove,
+  onToggle,
+  onRemove,
+}: {
+  section: LayoutSection
+  index: number
+  total: number
+  flashing: boolean
+  deleting: string | null
+  isDirty: boolean
+  onMove: (dir: -1 | 1) => void
+  onToggle: () => void
+  onRemove: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: s.id })
+  const isDynamic = !!templateTypeOf(s.id)
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        zIndex: isDragging ? 1 : 'auto',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 10px',
+        borderRadius: 10,
+        background: s.visible ? '#ffffff10' : '#ffffff06',
+        border: '1px solid #ffffff1a',
+        opacity: deleting === s.id ? 0.4 : isDragging ? 0.5 : s.visible ? 1 : 0.55,
+      }}
+    >
+      {flashing && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            animation: 'sectionMoveFlash 2000ms ease',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      <span
+        {...attributes}
+        {...listeners}
+        title="Arrastrar para reordenar"
+        style={{ ...dragHandle, cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
+        ⠿
+      </span>
+
+      <span style={positionBadge} title={`Posición ${i + 1}`}>{i + 1}</span>
+
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button type="button" style={iconBtn(i > 0)} onClick={() => onMove(-1)} disabled={i === 0} title="Subir">
+          ↑
+        </button>
+        <button
+          type="button"
+          style={iconBtn(i < total - 1)}
+          onClick={() => onMove(1)}
+          disabled={i === total - 1}
+          title="Bajar"
+        >
+          ↓
+        </button>
+      </div>
+
+      <span style={{ flex: 1, fontSize: 14 }}>
+        {s.label}
+        {isDynamic && <span style={{ opacity: 0.4, fontSize: 11 }}> · nueva</span>}
+      </span>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        title={s.visible ? 'Ocultar' : 'Mostrar'}
+        style={{
+          border: '1px solid #ffffff3b',
+          background: '#ffffff12',
+          color: '#fff',
+          borderRadius: 8,
+          padding: '5px 9px',
+          cursor: 'pointer',
+          fontSize: 12,
+        }}
+      >
+        {s.visible ? '👁' : '🚫'}
+      </button>
+
+      {isDynamic && (
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={deleting !== null || isDirty}
+          title={isDirty ? 'Guarda tus cambios primero' : 'Eliminar sección'}
+          style={{
+            border: '1px solid #e0808055',
+            background: '#ffffff10',
+            color: '#ff9a9a',
+            borderRadius: 8,
+            padding: '5px 9px',
+            cursor: deleting !== null || isDirty ? 'default' : 'pointer',
+            fontSize: 12,
+          }}
+        >
+          🗑
+        </button>
+      )}
     </div>
   )
 }
