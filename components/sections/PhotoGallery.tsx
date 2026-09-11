@@ -15,18 +15,31 @@ export default function PhotoGallery({
   id: string
   data: PhotoGalleryData
   edit?: boolean
-  onChange?: (data: PhotoGalleryData) => void
+  onChange?: (data: PhotoGalleryData | ((prev: PhotoGalleryData) => PhotoGalleryData)) => void
 }) {
   const images = data.images ?? []
-  const set = (next: GalleryPhoto[]) => onChange?.({ ...data, images: next })
+
+  // Actualiza a partir del array de fotos MÁS RECIENTE (el que EditProvider tiene en
+  // ese momento), nunca del `images` capturado en este render. Con esto, aplicar el
+  // punto focal de una foto justo después de subir otra (o de tocar dos fotos casi a
+  // la vez) ya no puede perder una de las dos actualizaciones — antes, como cada
+  // cambio partía del `data` de su propio cierre, el segundo cambio en llegar podía
+  // pisar al primero si React aún no había vuelto a renderizar entre uno y otro.
+  const setImages = (updater: (images: GalleryPhoto[]) => GalleryPhoto[]) =>
+    onChange?.((prev) => ({ ...prev, images: updater(prev.images ?? []) }))
+
   const patch = (photoId: string, p: Partial<GalleryPhoto>) =>
-    set(images.map((x) => (x.id === photoId ? { ...x, ...p } : x)))
+    setImages((imgs) => imgs.map((x) => (x.id === photoId ? { ...x, ...p } : x)))
 
   if (!edit && images.length === 0 && !data.heading) return null
 
   return (
     <SectionShell id={id}>
-      <SectionHeading heading={data.heading} edit={edit} onChange={(v) => onChange?.({ ...data, heading: v })} />
+      <SectionHeading
+        heading={data.heading}
+        edit={edit}
+        onChange={(v) => onChange?.((prev) => ({ ...prev, heading: v }))}
+      />
       <div
         style={{
           maxWidth: 1100,
@@ -65,8 +78,8 @@ export default function PhotoGallery({
                     index={i}
                     count={images.length}
                     label="esta foto"
-                    onMove={(dir) => set(moved(images, i, dir))}
-                    onRemove={() => set(images.filter((x) => x.id !== photo.id))}
+                    onMove={(dir) => setImages((imgs) => moved(imgs, i, dir))}
+                    onRemove={() => setImages((imgs) => imgs.filter((x) => x.id !== photo.id))}
                   />
                 )}
               </figcaption>
@@ -76,7 +89,7 @@ export default function PhotoGallery({
       </div>
       {edit && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
-          <AddButton onClick={() => set([...images, { id: newItemId(), image: { src: '' }, caption: '' }])}>
+          <AddButton onClick={() => setImages((imgs) => [...imgs, { id: newItemId(), image: { src: '' }, caption: '' }])}>
             + Añadir foto
           </AddButton>
         </div>

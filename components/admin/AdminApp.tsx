@@ -104,7 +104,12 @@ function AdminSite() {
           } else {
             const d = dynamic[s.id]
             body = d ? (
-              <DynamicSection id={s.id} data={d} edit onChange={(next: DynamicSectionData) => setDynamic(s.id, next)} />
+              <DynamicSection
+                id={s.id}
+                data={d}
+                edit
+                onChange={(next: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => setDynamic(s.id, next)}
+              />
             ) : (
               <div style={{ padding: '40px 6vw', color: 'var(--ink-soft)', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
                 «{s.label}» se está creando… recarga en ~1 min cuando Vercel termine de desplegar.
