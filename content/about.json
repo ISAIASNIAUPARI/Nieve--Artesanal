@@ -5,7 +5,9 @@
   "paragraph2": "El resultado: una textura más cremosa y un sabor que se siente real, cono a cono.",
   "image": {
     "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/conos-heladeria",
-    "alt": "Dos conos de helado frente a la fachada de la heladería"
+    "alt": "Dos conos de helado frente a la fachada de la heladería",
+    "focalX": 9,
+    "focalY": 58
   },
   "buttons": [
     {
