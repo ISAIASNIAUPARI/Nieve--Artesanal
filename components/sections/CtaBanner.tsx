@@ -94,7 +94,14 @@ export default function CtaBanner({
           placeholder="Texto de apoyo"
           style={{ fontSize: 17, lineHeight: 1.6, margin: 0, color: '#fff', opacity: 0.95 }}
         />
-        <SectionButtons buttons={data.buttons} tone="onAccent" edit={edit} align="center" style={{ marginTop: 8 }} />
+        <SectionButtons
+          buttons={data.buttons}
+          tone="onAccent"
+          edit={edit}
+          onReorder={(b) => onChange?.((prev) => ({ ...prev, buttons: b }))}
+          align="center"
+          style={{ marginTop: 8 }}
+        />
         {edit && onChange && (
           <ButtonsEditor
             buttons={data.buttons ?? []}

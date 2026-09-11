@@ -67,7 +67,7 @@ export default function About({ data, edit, onChange, onButtonsChange, onImageCh
           placeholder="Segundo párrafo"
           style={{ fontSize: 17, lineHeight: 1.75, color: 'var(--ink-soft)', margin: 0 }}
         />
-        <SectionButtons buttons={data.buttons} tone="light" edit={edit} style={{ marginTop: 28 }} />
+        <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
         {edit && onButtonsChange && (
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Nosotros" />
         )}

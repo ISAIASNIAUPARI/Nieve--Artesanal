@@ -84,7 +84,7 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
           placeholder="Descripción breve"
           style={{ fontSize: 18, lineHeight: 1.6, color: '#f2ede6', margin: '0 0 32px', maxWidth: 480 }}
         />
-        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} />
+        <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} />
         {edit && onButtonsChange && (
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Portada" />
         )}
