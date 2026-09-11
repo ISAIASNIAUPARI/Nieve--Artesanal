@@ -16,6 +16,11 @@
       "visible": true
     },
     {
+      "id": "menu-grid-menu",
+      "label": "MENU",
+      "visible": true
+    },
+    {
       "id": "video",
       "label": "Video",
       "visible": true
@@ -38,11 +43,6 @@
     {
       "id": "text-block-texto",
       "label": "TEXTO",
-      "visible": true
-    },
-    {
-      "id": "menu-grid-menu",
-      "label": "MENU",
       "visible": true
     }
   ]
