@@ -71,7 +71,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
           </div>
         </div>
         <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} style={{ marginTop: 28 }} />
-        {edit && onButtonsChange && (
+        {edit && onButtonsChange && !isMobile && (
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Ubicación" />
         )}
       </div>

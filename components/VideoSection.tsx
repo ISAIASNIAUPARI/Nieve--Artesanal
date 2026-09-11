@@ -299,7 +299,7 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
         </div>
       )}
       <SectionButtons buttons={data.buttons} tone="light" edit={edit} onReorder={onButtonsChange} align="center" style={{ marginTop: 40 }} />
-      {edit && onButtonsChange && (
+      {edit && onButtonsChange && !isMobile && (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ButtonsEditor buttons={data.buttons ?? []} onChange={onButtonsChange} sectionLabel="Video" />
         </div>

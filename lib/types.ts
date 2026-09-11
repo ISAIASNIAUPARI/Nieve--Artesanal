@@ -45,14 +45,6 @@ export const MAX_BUTTONS = 5
  * que aquí sin la almohadilla — así los botones siguen apuntando bien aunque el
  * cliente reordene las secciones.
  */
-export const PAGE_ANCHORS: { value: string; label: string }[] = [
-  { value: '#hero', label: 'Portada' },
-  { value: '#about', label: 'Nosotros' },
-  { value: '#flavors', label: 'Sabores' },
-  { value: '#video', label: 'Video' },
-  { value: '#location', label: 'Ubicación' },
-  { value: '#contacto', label: 'Contacto' },
-]
 
 /** Estado de una subida de medio en curso desde el /admin (para la barra de progreso). */
 export interface MediaUploadStatus {

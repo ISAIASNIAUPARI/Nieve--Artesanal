@@ -1,7 +1,7 @@
 'use client'
 
 import type { Button, HrefType } from '@/lib/types'
-import { MAX_BUTTONS, PAGE_ANCHORS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
+import { MAX_BUTTONS, isSafeHref, newButton, resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -82,8 +82,16 @@ export default function ButtonsEditor({
   sectionLabel: string
   max?: number
 }) {
-  const { viewMode } = useEdit()
+  const { viewMode, layout } = useEdit()
   const mobileMode = viewMode === 'mobile'
+  // Nº. Nombre, en el orden real que tiene ahora mismo "Organizar página" — no una
+  // lista fija: si el cliente reordena o renombra una sección ahí, el dropdown de
+  // Destino lo refleja solo. "Contacto" no es una sección de layout.sections (es el
+  // ancla fija del formulario dentro de Ubicación), así que se agrega aparte al final.
+  const anchorOptions = [
+    ...layout.sections.map((s, i) => ({ value: `#${s.id}`, label: `${i + 1}. ${s.label}` })),
+    { value: '#contacto', label: 'Contacto' },
+  ]
   const update = (id: string, patch: Partial<Button>) =>
     onChange(buttons.map((b) => (b.id === id ? { ...b, ...patch } : b)))
 
@@ -141,6 +149,7 @@ export default function ButtonsEditor({
               index={i}
               total={buttons.length}
               mobileMode={mobileMode}
+              anchorOptions={anchorOptions}
               onUpdate={(patch) => update(b.id, patch)}
               onRemove={() => remove(b.id)}
               onMove={(dir) => move(i, dir)}
@@ -176,6 +185,7 @@ function SortableButtonRow({
   index: i,
   total,
   mobileMode,
+  anchorOptions,
   onUpdate,
   onRemove,
   onMove,
@@ -184,6 +194,7 @@ function SortableButtonRow({
   index: number
   total: number
   mobileMode: boolean
+  anchorOptions: { value: string; label: string }[]
   onUpdate: (patch: Partial<Button>) => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
@@ -286,12 +297,12 @@ function SortableButtonRow({
         {b.hrefType === 'anchor' ? (
           <select
             style={{ ...field, borderColor: hrefError ? '#ff8a8a' : ('#ffffff3b') }}
-            value={PAGE_ANCHORS.some((a) => a.value === b.href) ? b.href : '__custom'}
+            value={anchorOptions.some((a) => a.value === b.href) ? b.href : '__custom'}
             onChange={(e) => onUpdate({ href: e.target.value === '__custom' ? '' : e.target.value })}
           >
-            {PAGE_ANCHORS.map((a) => (
+            {anchorOptions.map((a) => (
               <option key={a.value} value={a.value} style={{ color: '#000' }}>
-                {a.label} ({a.value})
+                {a.label}
               </option>
             ))}
             <option value="__custom" style={{ color: '#000' }}>
@@ -314,7 +325,7 @@ function SortableButtonRow({
             onChange={(e) => onUpdate({ href: e.target.value })}
           />
         )}
-        {b.hrefType === 'anchor' && !PAGE_ANCHORS.some((a) => a.value === b.href) && (
+        {b.hrefType === 'anchor' && !anchorOptions.some((a) => a.value === b.href) && (
           <input
             style={{ ...field, borderColor: hrefError ? '#ff8a8a' : ('#ffffff3b') }}
             placeholder="#mi-seccion"

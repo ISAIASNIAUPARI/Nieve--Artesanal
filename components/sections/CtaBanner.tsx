@@ -119,7 +119,7 @@ export default function CtaBanner({
           align="center"
           style={{ marginTop: 8 }}
         />
-        {edit && onChange && (
+        {edit && onChange && !isMobile && (
           <ButtonsEditor
             buttons={data.buttons ?? []}
             onChange={(b) => onChange((prev) => ({ ...prev, buttons: b }))}

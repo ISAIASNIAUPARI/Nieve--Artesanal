@@ -210,12 +210,15 @@ function DraggableCanvasButton({
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: b.id })
 
+  // Un <div> a propósito, no un <a> — en edición este elemento SOLO sirve para
+  // arrastrar. Un <a href> real, aunque el click lleve preventDefault, puede
+  // arrastrar consigo comportamientos del navegador (foco, scroll-to-anchor)
+  // que molestaban al intentar mover el botón. Sin href no hay nada a donde
+  // navegar; el destino real (resolveButtonHref) solo se usa en el <a> de
+  // verdad que ve el visitante del sitio público.
   return (
-    <a
+    <div
       ref={setNodeRef}
-      href={resolveButtonHref(b)}
-      draggable={false}
-      onClick={(e) => e.preventDefault()}
       {...attributes}
       {...listeners}
       style={{
@@ -227,10 +230,11 @@ function DraggableCanvasButton({
         pointerEvents: 'auto',
         cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
+        userSelect: 'none',
         zIndex: isDragging ? 10 : 1,
       }}
     >
       {b.text}
-    </a>
+    </div>
   )
 }
