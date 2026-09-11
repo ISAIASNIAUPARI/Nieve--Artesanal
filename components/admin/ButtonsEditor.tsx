@@ -282,7 +282,7 @@ function SortableButtonRow({
         <select
           style={field}
           value={b.hrefType}
-          onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType, href: '', whatsappMessage: undefined })}
+          onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType, href: '' })}
         >
           {(Object.keys(TYPE_LABELS) as HrefType[]).map((t) => (
             <option key={t} value={t} style={{ color: '#000' }}>
@@ -338,18 +338,6 @@ function SortableButtonRow({
         )}
         {hrefError && <span style={{ color: '#ff8a8a', fontSize: 9 }}>Falta el destino o no está permitido.</span>}
       </label>
-
-      {b.hrefType === 'whatsapp' && (
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span style={{ opacity: 0.7, fontSize: 10 }}>Mensaje predeterminado (opcional)</span>
-          <input
-            style={field}
-            placeholder="Hola, quiero hacer un pedido…"
-            value={b.whatsappMessage ?? ''}
-            onChange={(e) => onUpdate({ whatsappMessage: e.target.value })}
-          />
-        </label>
-      )}
     </div>
   )
 }

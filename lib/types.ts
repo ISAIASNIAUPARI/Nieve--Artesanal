@@ -23,8 +23,6 @@ export interface Button {
   text: string
   href: string
   hrefType: HrefType
-  /** Mensaje precargado opcional, solo para hrefType:'whatsapp' — se manda como ?text= en el link de wa.me. */
-  whatsappMessage?: string
   /**
    * Posición libre estilo Wix, en % (0-100) del área de la sección. Hay dos pares
    * totalmente independientes — mover un botón en una vista nunca toca los datos
@@ -76,17 +74,15 @@ function digitsOnly(value: string): string {
 /**
  * Construye el href final de un botón a partir de su tipo:
  * - anchor / url → el valor tal cual
- * - whatsapp     → https://wa.me/<dígitos>[?text=<mensaje>]
+ * - whatsapp     → https://wa.me/<dígitos>
  * - phone        → tel:+<dígitos>
  */
-export function resolveButtonHref(button: Pick<Button, 'href' | 'hrefType' | 'whatsappMessage'>): string {
+export function resolveButtonHref(button: Pick<Button, 'href' | 'hrefType'>): string {
   const raw = (button.href || '').trim()
   switch (button.hrefType) {
     case 'whatsapp': {
       const n = digitsOnly(raw)
-      if (!n) return '#'
-      const msg = button.whatsappMessage?.trim()
-      return msg ? `https://wa.me/${n}?text=${encodeURIComponent(msg)}` : `https://wa.me/${n}`
+      return n ? `https://wa.me/${n}` : '#'
     }
     case 'phone': {
       const n = digitsOnly(raw)
