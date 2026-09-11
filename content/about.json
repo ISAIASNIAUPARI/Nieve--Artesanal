@@ -15,8 +15,8 @@
       "text": "Botón nuevo",
       "href": "#hero",
       "hrefType": "anchor",
-      "mobileX": 19.62566844919786,
-      "mobileY": 93.30677610566316,
+      "mobileX": 20.88235620508857,
+      "mobileY": 93.07392497210493,
       "desktopX": 7.873471626684206,
       "desktopY": 71.10352798952965
     },
@@ -27,8 +27,8 @@
       "hrefType": "anchor",
       "mobileX": 20.88235620508857,
       "mobileY": 48.449390874225216,
-      "desktopX": 20.592771081991692,
-      "desktopY": 70.86514984737013
+      "desktopX": 18.519405106802598,
+      "desktopY": 71.1035342188782
     }
   ]
 }
