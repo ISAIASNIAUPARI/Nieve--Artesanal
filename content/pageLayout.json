@@ -21,13 +21,13 @@
       "visible": true
     },
     {
-      "id": "location",
-      "label": "Ubicación",
+      "id": "photo-gallery-nuestros-empleados",
+      "label": "NUESTROS EMPLEADOS",
       "visible": true
     },
     {
-      "id": "photo-gallery-nuestros-empleados",
-      "label": "NUESTROS EMPLEADOS",
+      "id": "location",
+      "label": "Ubicación",
       "visible": true
     }
   ]
