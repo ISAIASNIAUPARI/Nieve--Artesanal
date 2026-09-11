@@ -53,10 +53,14 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
   `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
 - `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
 - `components/editable/` — `EditableText`, `EditableImage` y `CloudinaryImage` (esta última con
-  subida propia, para las secciones dinámicas), las piezas reutilizables del editor
+  subida propia, para las secciones dinámicas), las piezas reutilizables del editor. Ambas
+  imágenes aceptan también arrastrar y soltar un archivo encima para reemplazarlas.
 - `components/admin/FocalPointPicker.tsx` — selector de punto focal (icono ⊕ sobre cualquier
-  imagen en edición): guarda `focalX`/`focalY` (0-100) en el JSON de esa imagen; si no existen,
-  el recorte usa el centro (50/50), igual que antes
+  imagen en edición, o automático tras soltar un archivo): guarda `focalX`/`focalY` (0-100) en
+  el JSON de esa imagen; si no existen, el recorte usa el centro (50/50), igual que antes
+- `EditProvider` mantiene `isDraggingFile` (arrastrando algo sobre `/admin`) — pinta un borde
+  azul tenue en todos los contenedores de imagen a la vez y evita que el navegador abra el
+  archivo si se suelta fuera de uno de ellos
 - `components/sections/` — piezas compartidas y las 5 plantillas de sección nueva
   (`CtaBanner`, `MenuGrid`, `TextBlock`, `PhotoGallery`, `Faq`, más `DynamicSection` que
   elige cuál renderizar por el campo `type`)
