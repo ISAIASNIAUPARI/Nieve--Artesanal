@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Button, MediaUploadStatus, VideoSectionData } from '@/lib/types'
 import EditableText from './editable/EditableText'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
+import { useEditOptional } from './admin/EditProvider'
 
 interface VideoSectionProps {
   data?: VideoSectionData
@@ -16,11 +17,47 @@ interface VideoSectionProps {
   upload?: MediaUploadStatus
 }
 
+const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024
+
 export default function VideoSection({ data, edit, onChange, onButtonsChange, onVideoFile, upload }: VideoSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoUrl = data?.video?.src
   const uploading = !!upload && !upload.error
+
+  const [isDragging, setIsDragging] = useState(false)
+  const [dropError, setDropError] = useState<string | null>(null)
+  const dropErrorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // isDraggingFile viene de EditProvider (solo existe dentro del /admin); en el sitio
+  // público este hook devuelve null y la zona de drop simplemente no se pinta.
+  const editCtx = useEditOptional()
+  const dropZoneActive = editCtx?.isDraggingFile === 'video'
+
+  useEffect(() => {
+    return () => {
+      if (dropErrorTimer.current) clearTimeout(dropErrorTimer.current)
+    }
+  }, [])
+
+  function flashDropError(message: string, ms: number) {
+    setDropError(message)
+    if (dropErrorTimer.current) clearTimeout(dropErrorTimer.current)
+    dropErrorTimer.current = setTimeout(() => setDropError(null), ms)
+  }
+
+  function handleDroppedFile(file: File) {
+    if (!VIDEO_TYPES.includes(file.type)) {
+      flashDropError('Solo se aceptan videos (mp4, mov, webm)', 2000)
+      return
+    }
+    if (file.size > MAX_VIDEO_BYTES) {
+      flashDropError('El video supera el límite de 200 MB', 3000)
+      return
+    }
+    onVideoFile?.(file)
+  }
 
   useEffect(() => {
     const video = videoRef.current
@@ -74,8 +111,37 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
             cursor: edit && !uploading ? 'pointer' : undefined,
             minHeight: edit && !videoUrl ? 240 : undefined,
             background: edit && !videoUrl ? '#00000010' : undefined,
+            outline: edit && dropZoneActive ? '2px dashed #3b82f688' : 'none',
+            outlineOffset: -2,
+            transition: 'outline-color .15s',
           }}
           onClick={() => edit && !uploading && fileInputRef.current?.click()}
+          onDragEnter={(e) => {
+            if (!edit) return
+            e.preventDefault()
+            e.stopPropagation()
+            setIsDragging(true)
+          }}
+          onDragOver={(e) => {
+            if (!edit) return
+            e.preventDefault()
+            e.stopPropagation()
+            e.dataTransfer.dropEffect = 'copy'
+          }}
+          onDragLeave={(e) => {
+            if (!edit) return
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+              setIsDragging(false)
+            }
+          }}
+          onDrop={(e) => {
+            if (!edit) return
+            e.preventDefault()
+            e.stopPropagation()
+            setIsDragging(false)
+            const file = e.dataTransfer.files?.[0]
+            if (file) handleDroppedFile(file)
+          }}
         >
           {videoUrl ? (
             <video
@@ -121,7 +187,52 @@ export default function VideoSection({ data, edit, onChange, onButtonsChange, on
             </div>
           )}
 
-          {edit && !uploading && (
+          {edit && isDragging && !uploading && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                background: '#00000080',
+                border: '2px dashed #fff',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                pointerEvents: 'none',
+              }}
+            >
+              <span style={{ fontSize: 32, lineHeight: 1 }}>🎬</span>
+              <span>Suelta para cambiar el video</span>
+            </div>
+          )}
+
+          {edit && dropError && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#c0392bcc',
+                border: '2px dashed #fff',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                textAlign: 'center',
+                padding: 16,
+                pointerEvents: 'none',
+              }}
+            >
+              {dropError}
+            </div>
+          )}
+
+          {edit && !uploading && !isDragging && !dropError && (
             <div
               style={{
                 position: 'absolute',

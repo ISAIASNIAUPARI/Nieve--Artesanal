@@ -51,8 +51,14 @@ interface EditContextValue {
   /** Devuelve true si la subida terminó bien (false si falló) — para abrir el punto focal tras soltar un archivo. */
   uploadMedia: (section: SectionKey, field: string, file: File, kind: MediaKind) => Promise<boolean>
   uploads: Record<string, MediaUploadStatus>
-  /** true mientras el usuario arrastra un archivo sobre la página del admin (para pintar las zonas de drop). */
-  isDraggingFile: boolean
+  /**
+   * Tipo del archivo que el usuario está arrastrando sobre la página del admin
+   * ('image' | 'video' | null) — para resaltar solo los contenedores que lo aceptan.
+   * null también cuando el navegador no expone el tipo todavía o es de otro tipo;
+   * en ese caso no se resalta nada y el contenedor que reciba el drop muestra su
+   * propio error al soltar.
+   */
+  isDraggingFile: 'image' | 'video' | null
   saving: boolean
   saveError: string | null
   lastSaved: SaveResult | null
@@ -79,39 +85,42 @@ export function EditProvider({
   const [dirtyDynamic, setDirtyDynamic] = useState<Set<string>>(new Set())
   const [layoutDirty, setLayoutDirty] = useState(false)
   const [uploads, setUploads] = useState<Record<string, MediaUploadStatus>>({})
-  const [isDraggingFile, setIsDraggingFile] = useState(false)
+  const [isDraggingFile, setIsDraggingFile] = useState<'image' | 'video' | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastSaved, setLastSaved] = useState<SaveResult | null>(null)
 
-  // Arrastrar un archivo sobre la página del admin: marca isDraggingFile (para pintar
-  // todos los contenedores de imagen) y evita que el navegador lo abra si se suelta
-  // fuera de uno de ellos. Cuenta entradas/salidas porque dragenter/dragleave burbujean
-  // por cada hijo que el cursor cruza — el contador solo llega a 0 al salir de verdad.
+  // Arrastrar un archivo sobre la página del admin: marca isDraggingFile con el tipo
+  // detectado (para pintar solo los contenedores que lo aceptan) y evita que el
+  // navegador lo abra si se suelta fuera de uno de ellos. Cuenta entradas/salidas
+  // porque dragenter/dragleave burbujean por cada hijo que el cursor cruza — el
+  // contador solo llega a 0 al salir de verdad.
   useEffect(() => {
     let depth = 0
 
-    const isImageDrag = (e: DragEvent) => {
-      const items = e.dataTransfer?.items
-      if (!items || items.length === 0) return true // sin info todavía: asumir que sí
-      return Array.from(items).some((it) => it.kind === 'file' && (it.type === '' || it.type.startsWith('image/')))
+    const kindOf = (e: DragEvent): 'image' | 'video' | null => {
+      const type = e.dataTransfer?.items?.[0]?.type
+      if (!type) return null
+      if (type.startsWith('image/')) return 'image'
+      if (type.startsWith('video/')) return 'video'
+      return null
     }
 
     const onDragEnter = (e: DragEvent) => {
       depth++
-      if (depth === 1 && isImageDrag(e)) setIsDraggingFile(true)
+      if (depth === 1) setIsDraggingFile(kindOf(e))
     }
     const onDragOver = (e: DragEvent) => {
       e.preventDefault()
     }
     const onDragLeave = () => {
       depth = Math.max(0, depth - 1)
-      if (depth === 0) setIsDraggingFile(false)
+      if (depth === 0) setIsDraggingFile(null)
     }
     const onDrop = (e: DragEvent) => {
       e.preventDefault()
       depth = 0
-      setIsDraggingFile(false)
+      setIsDraggingFile(null)
     }
 
     document.addEventListener('dragenter', onDragEnter)

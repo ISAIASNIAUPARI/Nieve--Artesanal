@@ -51,16 +51,19 @@ en la rama `main` — así funciona por defecto cuando importas un repo en Verce
 - `app/admin/` — panel de edición (protegido por `middleware.ts`)
 - `app/api/admin/` — login, logout, guardado (commit a GitHub vía `lib/github.ts`) y
   `upload-image` / `upload-video` (firman la subida directa a Cloudinary vía `lib/cloudinary.ts`)
-- `components/` — un componente por sección; cada uno acepta `edit` para volverse editable
+- `components/` — un componente por sección; cada uno acepta `edit` para volverse editable.
+  `VideoSection.tsx` también acepta arrastrar y soltar un video encima (mp4/mov/webm, ≤200 MB).
 - `components/editable/` — `EditableText`, `EditableImage` y `CloudinaryImage` (esta última con
   subida propia, para las secciones dinámicas), las piezas reutilizables del editor. Ambas
   imágenes aceptan también arrastrar y soltar un archivo encima para reemplazarlas.
 - `components/admin/FocalPointPicker.tsx` — selector de punto focal (icono ⊕ sobre cualquier
   imagen en edición, o automático tras soltar un archivo): guarda `focalX`/`focalY` (0-100) en
-  el JSON de esa imagen; si no existen, el recorte usa el centro (50/50), igual que antes
-- `EditProvider` mantiene `isDraggingFile` (arrastrando algo sobre `/admin`) — pinta un borde
-  azul tenue en todos los contenedores de imagen a la vez y evita que el navegador abra el
-  archivo si se suelta fuera de uno de ellos
+  el JSON de esa imagen; si no existen, el recorte usa el centro (50/50), igual que antes.
+  No aplica a video.
+- `EditProvider` mantiene `isDraggingFile: 'image' | 'video' | null` (qué se está arrastrando
+  sobre `/admin`, detectado en el `dragenter` del documento) — pinta un borde azul tenue solo en
+  los contenedores que aceptan ese tipo, y evita que el navegador abra el archivo si se suelta
+  fuera de uno de ellos
 - `components/sections/` — piezas compartidas y las 5 plantillas de sección nueva
   (`CtaBanner`, `MenuGrid`, `TextBlock`, `PhotoGallery`, `Faq`, más `DynamicSection` que
   elige cuál renderizar por el campo `type`)
