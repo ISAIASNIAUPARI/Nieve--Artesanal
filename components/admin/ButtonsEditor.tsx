@@ -18,6 +18,10 @@ const TYPE_LABELS: Record<HrefType, string> = {
 // en la vista previa — ver SectionButtons.tsx), así que ya no necesita una
 // variante "mobileMode": un solo juego de tamaños, chico a propósito — el
 // cliente lo pidió "dos veces más pequeño" que la versión anterior.
+// width:'fit-content' para que el panel no se estire al ancho disponible del
+// contenedor — se ajusta a su contenido (la línea más larga que tenga
+// adentro), con maxWidth como tope para cuando hay varios botones con textos
+// largos. El cliente pidió que dejara de verse "ancho con espacio vacío".
 const box: React.CSSProperties = {
   fontFamily: 'system-ui, sans-serif',
   fontSize: 10,
@@ -30,7 +34,8 @@ const box: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 4,
-  maxWidth: 380,
+  width: 'fit-content',
+  maxWidth: 190,
   textAlign: 'left',
 }
 
