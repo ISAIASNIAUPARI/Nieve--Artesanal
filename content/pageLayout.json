@@ -24,6 +24,11 @@
       "id": "location",
       "label": "Ubicación",
       "visible": true
+    },
+    {
+      "id": "photo-gallery-nuestros-empleados",
+      "label": "NUESTROS EMPLEADOS",
+      "visible": true
     }
   ]
 }
