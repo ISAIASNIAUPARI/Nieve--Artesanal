@@ -4,6 +4,7 @@ import type { Button, MobileZone } from '@/lib/types'
 import { resolveButtonHref } from '@/lib/types'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { restrictToParentElement } from '@dnd-kit/modifiers'
 import { CSS } from '@dnd-kit/utilities'
 import { useIsMobileView } from '../useIsMobileView'
 
@@ -135,7 +136,15 @@ export default function SectionButtons({
 
   const rowNode =
     row && draggable ? (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      // restrictToParentElement: el botón arrastrado no puede salir del contenedor
+      // de la fila (el mismo ancho que el contenido de la sección) — sin esto, se
+      // podía arrastrar hacia la derecha "al infinito", fuera del área visible.
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToParentElement]}
+      >
         <SortableContext items={flowing.map((b) => b.id)} strategy={rectSortingStrategy}>
           {row}
         </SortableContext>
