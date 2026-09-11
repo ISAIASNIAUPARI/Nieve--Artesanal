@@ -3,6 +3,7 @@
 import type { LayoutSection, SiteSettingsData } from '@/lib/types'
 import { DEFAULT_PAGE_LAYOUT } from '@/lib/types'
 import EditableText from './editable/EditableText'
+import { useIsMobileView } from './useIsMobileView'
 
 interface HeaderProps {
   siteSettings?: SiteSettingsData
@@ -15,6 +16,7 @@ interface HeaderProps {
 export default function Header({ siteSettings, sections, edit, onChange }: HeaderProps) {
   const brandName = siteSettings?.brandName || 'Nieve Artesanal'
   const navSections = (sections ?? DEFAULT_PAGE_LAYOUT.sections).filter((s) => s.visible && s.id !== 'hero')
+  const isMobile = useIsMobileView()
 
   return (
     <header
@@ -25,7 +27,9 @@ export default function Header({ siteSettings, sections, edit, onChange }: Heade
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '18px 6vw',
+        flexWrap: 'wrap',
+        rowGap: 8,
+        padding: isMobile ? '14px 20px' : '18px 6vw',
         background: 'oklch(97.5% 0.012 80 / 0.933)',
         backdropFilter: 'blur(8px)',
         borderBottom: '1px solid var(--line)',
@@ -36,15 +40,29 @@ export default function Header({ siteSettings, sections, edit, onChange }: Heade
         value={brandName}
         onChange={(v) => onChange?.('brandName', v)}
         placeholder="Nombre de la marca"
-        style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 24, color: 'var(--ink)' }}
+        style={{
+          flexShrink: 0,
+          fontFamily: 'var(--font-dm-serif), serif',
+          fontSize: isMobile ? 19 : 24,
+          color: 'var(--ink)',
+        }}
       />
-      <nav style={{ display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <nav
+        style={{
+          display: 'flex',
+          gap: isMobile ? 14 : 32,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'flex-end',
+          width: isMobile ? '100%' : 'auto',
+        }}
+      >
         {navSections.map((s) => (
           <a
             key={s.id}
             href={`#${s.id}`}
             onClick={(e) => edit && e.preventDefault()}
-            style={{ color: 'var(--ink)', fontSize: 15, fontWeight: 500 }}
+            style={{ color: 'var(--ink)', fontSize: isMobile ? 13 : 15, fontWeight: 500 }}
           >
             {s.label}
           </a>
@@ -53,11 +71,11 @@ export default function Header({ siteSettings, sections, edit, onChange }: Heade
           href="#contacto"
           onClick={(e) => edit && e.preventDefault()}
           style={{
-            padding: '10px 22px',
+            padding: isMobile ? '8px 16px' : '10px 22px',
             background: 'var(--accent)',
             color: '#fff',
             borderRadius: 999,
-            fontSize: 14,
+            fontSize: isMobile ? 13 : 14,
             fontWeight: 600,
           }}
         >

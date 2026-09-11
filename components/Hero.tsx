@@ -5,6 +5,7 @@ import EditableText from './editable/EditableText'
 import EditableImage from './editable/EditableImage'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
+import { useIsMobileView } from './useIsMobileView'
 
 interface HeroProps {
   data?: HeroSectionData
@@ -17,10 +18,11 @@ interface HeroProps {
 }
 
 export default function Hero({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: HeroProps) {
+  const isMobile = useIsMobileView()
   if (!data) return null
 
   return (
-    <section id="hero" style={{ position: 'relative', minHeight: '88vh' }}>
+    <section id="hero" style={{ position: 'relative', minHeight: '88vh', display: 'flex', alignItems: 'center' }}>
       <EditableImage
         src={data.backgroundImage?.src}
         alt={data.backgroundImage?.alt}
@@ -42,21 +44,19 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
             'linear-gradient(90deg, oklch(27% 0.035 45 / 0.867) 0%, oklch(27% 0.035 45 / 0.533) 45%, oklch(27% 0.035 45 / 0.133) 100%)',
         }}
       />
-      {/* position:absolute + inset:0 en vez de ser un hijo normal centrado por flex del
-          <section> — así este wrapper cubre TODA la sección (no solo el alto del texto)
-          y sirve de referencia correcta para los botones anclados a una zona móvil
-          (arriba/abajo tienen que medirse contra el hero completo, no contra un bloque
-          de texto centrado verticalmente). El contenido interno se sigue viendo igual:
-          mismo padding, mismo maxWidth, mismo centrado vertical, ahora vía flex. */}
+      {/* Hijo normal (no position:absolute) del <section> flex — así el contenido
+          SIGUE DICTANDO el alto de la sección cuando es más alto que minHeight:88vh
+          (pasa en edición: el panel de botones/zona móvil puede ser bien largo). Con
+          position:absolute+inset:0 el contenido queda "atrapado" en un alto fijo y
+          se desborda simétricamente hacia arriba/abajo — el título terminaba
+          empujado fuera de la pantalla, por encima del hero. Los botones con zona
+          móvil (mobileZone) igual bubblean hasta este <section> (position:relative)
+          porque este wrapper no fija su propio position. */}
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
           zIndex: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '0 6vw',
+          width: '100%',
+          padding: isMobile ? '40px 20px' : '0 6vw',
         }}
       >
         <div style={{ maxWidth: 640, animation: 'fadeUp .8s ease' }}>
@@ -74,7 +74,7 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
               fontSize: 13,
               letterSpacing: '.08em',
               textTransform: 'uppercase',
-              marginBottom: 20,
+              marginBottom: isMobile ? 14 : 20,
             }}
           />
           <div>
@@ -86,10 +86,10 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
               placeholder="Título principal"
               style={{
                 fontFamily: 'var(--font-dm-serif), serif',
-                fontSize: 'clamp(38px, 5.5vw, 68px)',
-                lineHeight: 1.05,
+                fontSize: isMobile ? 34 : 'clamp(38px, 5.5vw, 68px)',
+                lineHeight: 1.15,
                 color: '#fff',
-                margin: '0 0 20px',
+                margin: isMobile ? '0 0 14px' : '0 0 20px',
               }}
             />
           </div>
@@ -99,7 +99,13 @@ export default function Hero({ data, edit, onChange, onButtonsChange, onImageCha
             value={data.description}
             onChange={(v) => onChange?.('description', v)}
             placeholder="Descripción breve"
-            style={{ fontSize: 18, lineHeight: 1.6, color: '#f2ede6', margin: '0 0 32px', maxWidth: 480 }}
+            style={{
+              fontSize: isMobile ? 15 : 18,
+              lineHeight: 1.6,
+              color: '#f2ede6',
+              margin: isMobile ? '0 0 22px' : '0 0 32px',
+              maxWidth: 480,
+            }}
           />
           <SectionButtons buttons={data.buttons} tone="dark" edit={edit} onReorder={onButtonsChange} />
           {edit && onButtonsChange && (

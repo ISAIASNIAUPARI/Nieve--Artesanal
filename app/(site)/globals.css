@@ -22,6 +22,18 @@ html {
   box-sizing: border-box;
 }
 
+/* Red de seguridad: el texto parte en palabras completas, nunca por letra — solo una
+   palabra individual más larga que su contenedor se corta (overflow-wrap), que es un
+   caso raro. Esto es un respaldo; el ajuste real de tamaños en móvil vive en cada
+   componente (ver useIsMobileView). */
+.site h1,
+.site h2,
+.site h3,
+.site p {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
 .site a {
   color: var(--accent);
   text-decoration: none;

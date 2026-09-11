@@ -5,6 +5,7 @@ import EditableText from './editable/EditableText'
 import ContactForm from './ContactForm'
 import SectionButtons from './sections/SectionButtons'
 import ButtonsEditor from './admin/ButtonsEditor'
+import { useIsMobileView } from './useIsMobileView'
 
 interface LocationProps {
   data?: LocationSectionData
@@ -14,6 +15,7 @@ interface LocationProps {
 }
 
 export default function Location({ data, edit, onChange, onButtonsChange }: LocationProps) {
+  const isMobile = useIsMobileView()
   if (!data) return null
 
   return (
@@ -21,12 +23,12 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
       id="location"
       style={{
         position: 'relative',
-        padding: '100px 6vw',
+        padding: isMobile ? '48px 20px' : '100px 6vw',
         background: 'var(--ink)',
         color: '#fff',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 64,
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        gap: isMobile ? 32 : 64,
       }}
     >
       <div>
@@ -43,7 +45,13 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
           value={data.heading}
           onChange={(v) => onChange?.('heading', v)}
           placeholder="Título de la sección"
-          style={{ fontFamily: 'var(--font-dm-serif), serif', fontSize: 'clamp(28px,3.5vw,42px)', margin: '12px 0 28px', color: '#fff' }}
+          style={{
+            fontFamily: 'var(--font-dm-serif), serif',
+            fontSize: isMobile ? 26 : 'clamp(28px,3.5vw,42px)',
+            lineHeight: 1.2,
+            margin: '12px 0 28px',
+            color: '#fff',
+          }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontSize: 16, lineHeight: 1.6, color: '#e8e2d8' }}>
           <div>
