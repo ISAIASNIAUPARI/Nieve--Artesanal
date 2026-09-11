@@ -37,37 +37,52 @@ export function SectionHeading({
   const showSubtitle = edit || Boolean(subtitle && subtitle.trim() !== '')
   return (
     <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto 48px' }}>
+      {/*
+        Cada campo va en su propio contenedor de ancho completo. EditableText, en modo
+        edición, cae a `display:inline-block` cuando su `style` no fija uno propio (lo
+        necesita para que el contorno no se estire de borde a borde) — eso es justo lo
+        que hacía que, en el admin, el subtitle y el heading pudieran quedar uno junto al
+        otro cuando el subtitle era corto: dos elementos inline-block seguidos, con hueco
+        de sobra, se acomodan en la misma línea. En el sitio público no pasa porque ahí el
+        heading es un <h2> normal (de bloque) al no tener ese `edit` forzando su display.
+        Envolver cada campo en su propio `div` de bloque garantiza el apilado en los dos
+        modos, sin tocar el estilo del <h2> ni del <span> que ya renderiza el sitio en vivo.
+      */}
       {showSubtitle && (
+        <div style={{ display: 'block', width: '100%' }}>
+          <EditableText
+            edit={edit}
+            value={subtitle}
+            onChange={onSubtitleChange}
+            placeholder="Etiqueta superior (opcional)"
+            alwaysShowOutline
+            style={{
+              display: 'inline-block',
+              color: 'var(--accent)',
+              fontWeight: 600,
+              fontSize: 14,
+              letterSpacing: '.08em',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}
+          />
+        </div>
+      )}
+      <div style={{ display: 'block', width: '100%' }}>
         <EditableText
+          as="h2"
           edit={edit}
-          value={subtitle}
-          onChange={onSubtitleChange}
-          placeholder="Etiqueta superior (opcional)"
-          alwaysShowOutline
+          value={heading}
+          onChange={onChange}
+          placeholder="Título de la sección"
           style={{
-            display: 'inline-block',
-            color: 'var(--accent)',
-            fontWeight: 600,
-            fontSize: 14,
-            letterSpacing: '.08em',
-            textTransform: 'uppercase',
-            marginBottom: 8,
+            fontFamily: 'var(--font-dm-serif), serif',
+            fontSize: 'clamp(28px,3.5vw,42px)',
+            color: 'var(--ink)',
+            margin: 0,
           }}
         />
-      )}
-      <EditableText
-        as="h2"
-        edit={edit}
-        value={heading}
-        onChange={onChange}
-        placeholder="Título de la sección"
-        style={{
-          fontFamily: 'var(--font-dm-serif), serif',
-          fontSize: 'clamp(28px,3.5vw,42px)',
-          color: 'var(--ink)',
-          margin: 0,
-        }}
-      />
+      </div>
     </div>
   )
 }
