@@ -11,8 +11,24 @@
       "mobileZone": "top-left",
       "mobileX": 8.716564484458559,
       "mobileY": 67.32996367553267,
-      "desktopX": 8.458267132147599,
-      "desktopY": 36.748694127630834
+      "desktopX": 7.554493181893034,
+      "desktopY": 76.8709692977659
+    },
+    {
+      "id": "383a729a-7c2e-439a-b648-d62db2d5bd81",
+      "text": "Botón nuevo",
+      "href": "#hero",
+      "hrefType": "anchor",
+      "desktopX": 29.36470163592709,
+      "desktopY": 76.76031117744098
+    },
+    {
+      "id": "80d6dbcc-46a4-44a0-83a1-2d811184d4da",
+      "text": "Botón nuevo",
+      "href": "#hero",
+      "hrefType": "anchor",
+      "desktopX": 18.798510738991002,
+      "desktopY": 76.26190317975524
     }
   ],
   "backgroundImage": {
