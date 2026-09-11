@@ -1,6 +1,16 @@
 {
   "type": "text-block",
   "subtitle": "",
-  "heading": "",
-  "paragraphs": []
+  "heading": "NUESTRO LOCAL",
+  "paragraphs": [
+    {
+      "id": "bdd406c4-4835-4598-8f07-292469f0a1bf",
+      "text": "Un lugar tranquilo para disfrutar con amigos y compañeros"
+    }
+  ],
+  "image": {
+    "src": "https://res.cloudinary.com/foewxv45/image/upload/f_auto,q_auto/nieve-artesanal/dta7gn1xrsms5xxqzerw",
+    "focalX": 50,
+    "focalY": 79
+  }
 }
