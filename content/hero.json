@@ -8,21 +8,27 @@
       "text": "Cómo llegar",
       "href": "#location",
       "hrefType": "anchor",
-      "mobileZone": "top-left"
+      "mobileZone": "top-left",
+      "mobileX": 8.288763525651738,
+      "mobileY": 67.08074660528274
     },
     {
       "id": "btn-1",
       "text": "Ver opciones",
       "href": "#flavors",
       "hrefType": "anchor",
-      "mobileZone": "top-right"
+      "mobileZone": "top-right",
+      "mobileX": 11.898389194100936,
+      "mobileY": 75.19668484326475
     },
     {
       "id": "8e3be35d-9733-4054-a899-f965b4972cd7",
       "text": "link ubicación ",
       "href": "#hero",
       "hrefType": "url",
-      "mobileZone": "top-center"
+      "mobileZone": "top-center",
+      "mobileX": 9.51871984145221,
+      "mobileY": 83.47826466056871
     }
   ],
   "backgroundImage": {
