@@ -39,6 +39,11 @@
       "id": "text-block-texto",
       "label": "TEXTO",
       "visible": true
+    },
+    {
+      "id": "menu-grid-menu",
+      "label": "MENU",
+      "visible": true
     }
   ]
 }
