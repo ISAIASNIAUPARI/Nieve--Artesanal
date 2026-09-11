@@ -1,16 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+interface ContactFormProps {
+  /** Número de WhatsApp del negocio (Location.tsx pasa data.phone) — a donde se abre el chat al enviar. */
+  whatsappNumber?: string
+}
 
-export default function ContactForm({ confirmationMessage }: { confirmationMessage?: string }) {
-  const [sent, setSent] = useState(false)
+const label: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '.08em',
+  textTransform: 'uppercase',
+  color: '#ffffff99',
+}
 
+const input: React.CSSProperties = {
+  padding: '14px 16px',
+  borderRadius: 10,
+  border: '1px solid #ffffff33',
+  background: '#ffffff12',
+  color: '#fff',
+  fontSize: 15,
+  fontFamily: 'inherit',
+}
+
+/**
+ * Formulario de contacto: al enviar arma un mensaje con los datos escritos y
+ * abre WhatsApp con el número del negocio — no hay backend de correo (sitio
+ * de demostración), WhatsApp es el canal real que el cliente usa para
+ * atender pedidos.
+ */
+export default function ContactForm({ whatsappNumber }: ContactFormProps) {
   return (
     <form
       id="contacto"
       onSubmit={(e) => {
         e.preventDefault()
-        setSent(true)
+        const form = e.currentTarget
+        const name = (form.elements.namedItem('name') as HTMLInputElement).value
+        const email = (form.elements.namedItem('email') as HTMLInputElement).value
+        const phone = (form.elements.namedItem('phone') as HTMLInputElement).value
+        const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+        const digits = (whatsappNumber || '').replace(/[^\d]/g, '')
+        if (!digits) return
+        const text = [`¡Hola! Soy ${name}.`, `Correo: ${email}`, phone && `Teléfono: ${phone}`, '', message].filter(Boolean).join('\n')
+        window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, '_blank')
       }}
       style={{
         background: '#ffffff10',
@@ -19,52 +52,31 @@ export default function ContactForm({ confirmationMessage }: { confirmationMessa
         padding: 32,
         display: 'flex',
         flexDirection: 'column',
-        gap: 16,
+        gap: 18,
       }}
     >
       <h3 style={{ margin: '0 0 4px', fontFamily: 'var(--font-dm-serif), serif', fontSize: 22, color: '#fff' }}>Escríbenos</h3>
-      <input
-        type="text"
-        placeholder="Nombre"
-        required
-        style={{
-          padding: '14px 16px',
-          borderRadius: 10,
-          border: '1px solid #ffffff33',
-          background: '#ffffff12',
-          color: '#fff',
-          fontSize: 15,
-          fontFamily: 'inherit',
-        }}
-      />
-      <input
-        type="email"
-        placeholder="Correo electrónico"
-        required
-        style={{
-          padding: '14px 16px',
-          borderRadius: 10,
-          border: '1px solid #ffffff33',
-          background: '#ffffff12',
-          color: '#fff',
-          fontSize: 15,
-          fontFamily: 'inherit',
-        }}
-      />
-      <textarea
-        placeholder="Mensaje"
-        rows={4}
-        style={{
-          padding: '14px 16px',
-          borderRadius: 10,
-          border: '1px solid #ffffff33',
-          background: '#ffffff12',
-          color: '#fff',
-          fontSize: 15,
-          fontFamily: 'inherit',
-          resize: 'vertical',
-        }}
-      />
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={label}>Nombre completo</span>
+        <input name="name" type="text" placeholder="Juan Pérez…" required style={input} />
+      </label>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={label}>Correo electrónico</span>
+        <input name="email" type="email" placeholder="juan@email.com…" required style={input} />
+      </label>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={label}>Teléfono</span>
+        <input name="phone" type="tel" placeholder="+593 99 999 0000…" style={input} />
+      </label>
+
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={label}>Mensaje</span>
+        <textarea name="message" placeholder="Escríbenos tu consulta…" rows={4} style={{ ...input, resize: 'vertical' }} />
+      </label>
+
       <button
         type="submit"
         style={{
@@ -80,11 +92,9 @@ export default function ContactForm({ confirmationMessage }: { confirmationMessa
       >
         Enviar mensaje
       </button>
-      {sent && (
-        <p style={{ margin: 0, color: 'var(--accent-light)', fontSize: 14 }}>
-          {confirmationMessage || 'Gracias, te responderemos pronto.'}
-        </p>
-      )}
+      <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#ffffff88' }}>
+        Al enviar se abrirá WhatsApp para completar tu mensaje.
+      </p>
     </form>
   )
 }

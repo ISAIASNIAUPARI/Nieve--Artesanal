@@ -160,7 +160,9 @@ export interface LocationSectionData {
   address?: string
   schedule?: string
   phone?: string
-  confirmationMessage?: string
+  email?: string
+  /** Link de Google Maps (corto o largo) — arma el mapa embebido y el botón "Abrir en Maps". */
+  mapUrl?: string
   buttons?: Button[]
 }
 
