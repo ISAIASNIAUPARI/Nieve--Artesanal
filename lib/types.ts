@@ -18,40 +18,26 @@ export interface VideoValue {
 /** Tipo de destino de un botón — determina cómo se construye el href final. */
 export type HrefType = 'anchor' | 'url' | 'whatsapp' | 'phone'
 
-/**
- * Zona fija donde puede anclarse un botón en la vista móvil (esquina de la
- * sección) — alternativa a que el botón se apile en el flujo normal.
- */
-export type MobileZone = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-right'
-
 export interface Button {
   id: string
   text: string
   href: string
   hrefType: HrefType
-  /** Si no está definido, el botón usa el comportamiento normal (apilado/en fila) en móvil. */
-  mobileZone?: MobileZone
   /**
-   * Posición libre en desktop (estilo Wix), en % (0-100) del área de la sección —
-   * `desktopX` desde la izquierda, `desktopY` desde arriba. Independiente de
-   * `mobileZone`: mover un botón en una vista nunca cambia la otra. Si ninguno de
-   * los botones de la sección tiene esto definido, esa sección se ve como
-   * siempre (fila con flexbox).
+   * Posición libre estilo Wix, en % (0-100) del área de la sección. Hay dos pares
+   * totalmente independientes — mover un botón en una vista nunca toca los datos
+   * de la otra: `desktopX/Y` para la vista de escritorio, `mobileX/Y` para la
+   * vista móvil (real ≤768px o el toggle 📱 del admin). Si ningún botón de la
+   * sección tiene el par correspondiente definido, esa vista se ve como siempre
+   * (fila con flexbox en desktop, columna apilada centrada en móvil).
    */
   desktopX?: number
   desktopY?: number
+  mobileX?: number
+  mobileY?: number
 }
 
 export const MAX_BUTTONS = 5
-
-/** Zonas disponibles para el selector de posición móvil, en el orden en que se muestran. */
-export const MOBILE_ZONES: { value: MobileZone; label: string }[] = [
-  { value: 'top-left', label: 'Superior izquierda' },
-  { value: 'top-center', label: 'Superior centro' },
-  { value: 'top-right', label: 'Superior derecha' },
-  { value: 'bottom-left', label: 'Inferior izquierda' },
-  { value: 'bottom-right', label: 'Inferior derecha' },
-]
 
 /**
  * Anclas de sección disponibles para los botones tipo "Misma página".
