@@ -20,6 +20,7 @@ export default function Location({ data, edit, onChange, onButtonsChange }: Loca
     <section
       id="location"
       style={{
+        position: 'relative',
         padding: '100px 6vw',
         background: 'var(--ink)',
         color: '#fff',

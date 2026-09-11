@@ -4,8 +4,18 @@ import { useState } from 'react'
 import { useEdit } from './EditProvider'
 import LayoutPanel from './LayoutPanel'
 
+const viewModeBtn = (active: boolean): React.CSSProperties => ({
+  border: '1px solid #ffffff3b',
+  background: active ? '#ffffff28' : 'transparent',
+  color: '#fff',
+  padding: '6px 10px',
+  fontSize: 15,
+  lineHeight: 1,
+  cursor: 'pointer',
+})
+
 export default function Toolbar() {
-  const { isDirty, saving, saveError, lastSaved, save, uploads } = useEdit()
+  const { isDirty, saving, saveError, lastSaved, save, uploads, viewMode, setViewMode } = useEdit()
   const busyUploading = Object.values(uploads).some((u) => !u.error)
   const [layoutOpen, setLayoutOpen] = useState(false)
 
@@ -59,6 +69,25 @@ export default function Toolbar() {
         {busyUploading && <span style={{ color: '#7db8ff' }}>Subiendo un archivo…</span>}
         {!busyUploading && !saveError && isDirty && !saving && <span style={{ color: '#f5c25a' }}>Cambios sin guardar</span>}
         {saving && <span style={{ opacity: 0.8 }}>Guardando…</span>}
+
+        <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden' }}>
+          <button
+            type="button"
+            onClick={() => setViewMode('desktop')}
+            title="Vista desktop"
+            style={viewModeBtn(viewMode === 'desktop')}
+          >
+            🖥️
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('mobile')}
+            title="Vista móvil"
+            style={{ ...viewModeBtn(viewMode === 'mobile'), borderLeft: 'none' }}
+          >
+            📱
+          </button>
+        </div>
 
         <a href="/" target="_blank" rel="noreferrer" style={{ color: '#fff', opacity: 0.75, textDecoration: 'underline' }}>
           Ver sitio público

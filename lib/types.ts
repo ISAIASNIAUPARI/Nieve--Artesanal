@@ -18,14 +18,31 @@ export interface VideoValue {
 /** Tipo de destino de un botón — determina cómo se construye el href final. */
 export type HrefType = 'anchor' | 'url' | 'whatsapp' | 'phone'
 
+/**
+ * Zona fija donde puede anclarse un botón en la vista móvil (esquina de la
+ * sección) — alternativa a que el botón se apile en el flujo normal.
+ */
+export type MobileZone = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-right'
+
 export interface Button {
   id: string
   text: string
   href: string
   hrefType: HrefType
+  /** Si no está definido, el botón usa el comportamiento normal (apilado/en fila) en móvil. */
+  mobileZone?: MobileZone
 }
 
 export const MAX_BUTTONS = 5
+
+/** Zonas disponibles para el selector de posición móvil, en el orden en que se muestran. */
+export const MOBILE_ZONES: { value: MobileZone; label: string }[] = [
+  { value: 'top-left', label: 'Superior izquierda' },
+  { value: 'top-center', label: 'Superior centro' },
+  { value: 'top-right', label: 'Superior derecha' },
+  { value: 'bottom-left', label: 'Inferior izquierda' },
+  { value: 'bottom-right', label: 'Inferior derecha' },
+]
 
 /**
  * Anclas de sección disponibles para los botones tipo "Misma página".

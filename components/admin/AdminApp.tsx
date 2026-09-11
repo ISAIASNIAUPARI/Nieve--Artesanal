@@ -21,7 +21,7 @@ import Footer from '@/components/Footer'
 import DynamicSection from '@/components/sections/DynamicSection'
 
 function AdminSite() {
-  const { content, layout, dynamic, setField, setButtons, setFocal, setDynamic, uploadMedia, uploads } = useEdit()
+  const { content, layout, dynamic, setField, setButtons, setFocal, setDynamic, uploadMedia, uploads, viewMode } = useEdit()
 
   // uploads viene con claves `${section}.${field}`; cada componente quiere solo su sección.
   const sectionUploads = (section: SectionKey): Record<string, MediaUploadStatus> => {
@@ -87,82 +87,111 @@ function AdminSite() {
     ),
   }
 
+  const page = (
+    <div style={{ background: 'var(--bg)', color: 'var(--ink)', minHeight: '100vh', overflowX: 'hidden' }}>
+      <Header
+        siteSettings={content.siteSettings}
+        sections={layout.sections}
+        edit
+        onChange={(field, value) => setField('siteSettings', field, value)}
+      />
+      {layout.sections.map((s, i) => {
+        let body: React.ReactNode = null
+        if (isBaseSectionId(s.id)) {
+          body = editors[s.id]
+        } else {
+          const d = dynamic[s.id]
+          body = d ? (
+            <DynamicSection
+              id={s.id}
+              data={d}
+              edit
+              onChange={(next: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => setDynamic(s.id, next)}
+            />
+          ) : (
+            <div style={{ padding: '40px 6vw', color: 'var(--ink-soft)', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
+              «{s.label}» se está creando… recarga en ~1 min cuando Vercel termine de desplegar.
+            </div>
+          )
+        }
+        return (
+          <div key={s.id} style={{ position: 'relative' }}>
+            {!s.visible && (
+              <div
+                style={{
+                  padding: '8px 6vw',
+                  background: '#f5c25a',
+                  color: '#1c1310',
+                  fontFamily: 'system-ui, sans-serif',
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                🚫 «{s.label}» está oculta en el sitio público — la puedes seguir editando aquí.
+              </div>
+            )}
+            <div style={{ opacity: s.visible ? 1 : 0.5, position: 'relative' }}>
+              <span
+                title={`Posición ${i + 1} de ${layout.sections.length}`}
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  zIndex: 20,
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: '#1c1310cc',
+                  color: '#fff',
+                  fontFamily: 'system-ui, sans-serif',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: 'none',
+                }}
+              >
+                {i + 1}
+              </span>
+              {body}
+            </div>
+          </div>
+        )
+      })}
+      <Footer siteSettings={content.siteSettings} edit onChange={(field, value) => setField('siteSettings', field, value)} />
+    </div>
+  )
+
   return (
     <>
       <Toolbar />
-      <div style={{ background: 'var(--bg)', color: 'var(--ink)', minHeight: '100vh', overflowX: 'hidden' }}>
-        <Header
-          siteSettings={content.siteSettings}
-          sections={layout.sections}
-          edit
-          onChange={(field, value) => setField('siteSettings', field, value)}
-        />
-        {layout.sections.map((s, i) => {
-          let body: React.ReactNode = null
-          if (isBaseSectionId(s.id)) {
-            body = editors[s.id]
-          } else {
-            const d = dynamic[s.id]
-            body = d ? (
-              <DynamicSection
-                id={s.id}
-                data={d}
-                edit
-                onChange={(next: DynamicSectionData | ((prev: DynamicSectionData) => DynamicSectionData)) => setDynamic(s.id, next)}
-              />
-            ) : (
-              <div style={{ padding: '40px 6vw', color: 'var(--ink-soft)', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
-                «{s.label}» se está creando… recarga en ~1 min cuando Vercel termine de desplegar.
-              </div>
-            )
-          }
-          return (
-            <div key={s.id} style={{ position: 'relative' }}>
-              {!s.visible && (
-                <div
-                  style={{
-                    padding: '8px 6vw',
-                    background: '#f5c25a',
-                    color: '#1c1310',
-                    fontFamily: 'system-ui, sans-serif',
-                    fontSize: 13,
-                    fontWeight: 700,
-                  }}
-                >
-                  🚫 «{s.label}» está oculta en el sitio público — la puedes seguir editando aquí.
-                </div>
-              )}
-              <div style={{ opacity: s.visible ? 1 : 0.5, position: 'relative' }}>
-                <span
-                  title={`Posición ${i + 1} de ${layout.sections.length}`}
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    zIndex: 20,
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: '#1c1310cc',
-                    color: '#fff',
-                    fontFamily: 'system-ui, sans-serif',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {i + 1}
-                </span>
-                {body}
-              </div>
-            </div>
-          )
-        })}
-        <Footer siteSettings={content.siteSettings} edit onChange={(field, value) => setField('siteSettings', field, value)} />
-      </div>
+      {viewMode === 'mobile' ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '32px 16px',
+            background: '#2b2420',
+            minHeight: 'calc(100vh - 57px)',
+          }}
+        >
+          <div
+            style={{
+              width: 390,
+              maxWidth: '100%',
+              borderRadius: 24,
+              overflow: 'hidden',
+              border: '8px solid #1c1310',
+              boxShadow: '0 20px 60px -10px #000',
+            }}
+          >
+            {page}
+          </div>
+        </div>
+      ) : (
+        page
+      )}
     </>
   )
 }

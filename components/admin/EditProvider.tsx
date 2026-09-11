@@ -63,6 +63,9 @@ interface EditContextValue {
   saveError: string | null
   lastSaved: SaveResult | null
   save: () => Promise<void>
+  /** Vista previa del admin — no se guarda, es puramente de la sesión del editor. */
+  viewMode: 'desktop' | 'mobile'
+  setViewMode: (mode: 'desktop' | 'mobile') => void
 }
 
 const EditContext = createContext<EditContextValue | null>(null)
@@ -89,6 +92,7 @@ export function EditProvider({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [lastSaved, setLastSaved] = useState<SaveResult | null>(null)
+  const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop')
 
   // Arrastrar un archivo sobre la página del admin: marca isDraggingFile con el tipo
   // detectado (para pintar solo los contenedores que lo aceptan) y evita que el
@@ -323,6 +327,8 @@ export function EditProvider({
       saveError,
       lastSaved,
       save,
+      viewMode,
+      setViewMode,
     }),
     [
       content,
@@ -346,6 +352,7 @@ export function EditProvider({
       saveError,
       lastSaved,
       save,
+      viewMode,
     ]
   )
 
