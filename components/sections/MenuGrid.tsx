@@ -62,7 +62,7 @@ export default function MenuGrid({
               focalY={card.image?.focalY}
               aspectRatio={1}
               onFocalChange={(x, y) => patch(card.id, { image: { ...card.image, focalX: x, focalY: y } })}
-              wrapperStyle={{ aspectRatio: '4/3' }}
+              wrapperStyle={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden' }}
             />
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>

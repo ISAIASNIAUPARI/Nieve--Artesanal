@@ -53,7 +53,7 @@ export default function PhotoGallery({
       >
         {images.map((photo, i) => (
           <figure key={photo.id} style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ borderRadius: 12, overflow: 'hidden', position: 'relative', aspectRatio: '1/1' }}>
+            <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', position: 'relative', aspectRatio: '4/3' }}>
               <CloudinaryImage
                 src={photo.image?.src}
                 alt={photo.image?.alt || photo.caption}
