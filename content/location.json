@@ -4,7 +4,7 @@
   "address": "Av. Principal 245, esquina con Calle Real",
   "schedule": "Lunes a domingo · 12:00",
   "phone": "+593 998381419",
-  "confirmationMessage": "Gracias, te responderemos pronto.",
+  "mapUrl": "https://www.google.com/maps/place/Heladeria+Sweet%26Rolls/@-0.0627464,-78.351841,17z",
   "buttons": [
     {
       "id": "79128536-3c9c-452c-a2ed-4ed85eb729e1",
