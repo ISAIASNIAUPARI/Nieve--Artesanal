@@ -14,42 +14,48 @@ const TYPE_LABELS: Record<HrefType, string> = {
   phone: 'Teléfono',
 }
 
-const box: React.CSSProperties = {
+/**
+ * El panel es compacto por defecto (ya lo era demasiado grande antes) y se vuelve
+ * un escalón más chico todavía cuando el admin está en la vista previa móvil
+ * (`mobileMode`) — ahí compite por espacio con el frame de 390px y no debe tapar
+ * la sección que se está previsualizando.
+ */
+const boxStyle = (mobileMode: boolean): React.CSSProperties => ({
   fontFamily: 'system-ui, sans-serif',
-  fontSize: 13,
+  fontSize: mobileMode ? 11 : 12,
   color: '#fff',
   background: '#0000008c',
   border: '1px solid #ffffff2b',
-  borderRadius: 12,
-  padding: 14,
+  borderRadius: 10,
+  padding: mobileMode ? 8 : 10,
   margin: '18px 0 0',
   display: 'flex',
   flexDirection: 'column',
-  gap: 12,
+  gap: mobileMode ? 6 : 8,
   maxWidth: 520,
   textAlign: 'left',
-}
+})
 
-const field: React.CSSProperties = {
-  padding: '7px 10px',
-  borderRadius: 8,
+const fieldStyle = (mobileMode: boolean): React.CSSProperties => ({
+  padding: mobileMode ? '4px 7px' : '5px 8px',
+  borderRadius: 7,
   border: '1px solid #ffffff3b',
   background: '#00000066',
   color: '#fff',
-  fontSize: 13,
+  fontSize: mobileMode ? 11 : 12,
   fontFamily: 'inherit',
   width: '100%',
-}
+})
 
-const iconBtn = (enabled: boolean): React.CSSProperties => ({
+const iconBtn = (enabled: boolean, mobileMode: boolean): React.CSSProperties => ({
   border: '1px solid #ffffff3b',
   background: enabled ? '#ffffff17' : '#ffffff08',
   color: enabled ? '#fff' : '#ffffff55',
-  borderRadius: 8,
-  width: 30,
-  height: 30,
+  borderRadius: 7,
+  width: mobileMode ? 22 : 26,
+  height: mobileMode ? 22 : 26,
   cursor: enabled ? 'pointer' : 'default',
-  fontSize: 14,
+  fontSize: mobileMode ? 11 : 12,
   lineHeight: 1,
 })
 
@@ -77,6 +83,7 @@ export default function ButtonsEditor({
   max?: number
 }) {
   const { viewMode } = useEdit()
+  const mobileMode = viewMode === 'mobile'
   const update = (id: string, patch: Partial<Button>) =>
     onChange(buttons.map((b) => (b.id === id ? { ...b, ...patch } : b)))
 
@@ -108,8 +115,15 @@ export default function ButtonsEditor({
   }
 
   return (
-    <div style={box} onClick={(e) => e.stopPropagation()}>
-      <strong style={{ fontSize: 12, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '.05em' }}>
+    <div style={boxStyle(mobileMode)} onClick={(e) => e.stopPropagation()}>
+      <strong
+        style={{
+          fontSize: mobileMode ? 10 : 11,
+          opacity: 0.7,
+          textTransform: 'uppercase',
+          letterSpacing: '.05em',
+        }}
+      >
         Botones de «{sectionLabel}» ({buttons.length}/{max})
       </strong>
 
@@ -123,7 +137,7 @@ export default function ButtonsEditor({
               button={b}
               index={i}
               total={buttons.length}
-              mobileMode={viewMode === 'mobile'}
+              mobileMode={mobileMode}
               onUpdate={(patch) => update(b.id, patch)}
               onRemove={() => remove(b.id)}
               onMove={(dir) => move(i, dir)}
@@ -138,12 +152,12 @@ export default function ButtonsEditor({
         disabled={buttons.length >= max}
         style={{
           alignSelf: 'flex-start',
-          padding: '8px 14px',
+          padding: mobileMode ? '5px 10px' : '6px 12px',
           borderRadius: 999,
           border: '1px dashed #ffffff55',
           background: 'transparent',
           color: buttons.length >= max ? '#ffffff55' : '#fff',
-          fontSize: 13,
+          fontSize: mobileMode ? 11 : 12,
           fontWeight: 600,
           cursor: buttons.length >= max ? 'default' : 'pointer',
         }}
@@ -174,6 +188,7 @@ const zoneOf = (value: MobileZone) => MOBILE_ZONES.find((z) => z.value === value
  * Selector compacto de zona: 3 cuadrados arriba (izq/centro/der) + 2 abajo (izq/der),
  * mismo ancho total que la fila de arriba — discreto, sin caja ni fondo grande detrás.
  * Clic de nuevo sobre la zona ya elegida la quita (vuelve al apilado normal).
+ * Tamaño fijo (no se achica en `mobileMode`) — ya está bien de tamaño.
  */
 function MobileZonePicker({ value, onChange }: { value?: MobileZone; onChange: (zone: MobileZone | undefined) => void }) {
   const top = MOBILE_ZONES.slice(0, 3)
@@ -232,6 +247,7 @@ function SortableButtonRow({
 
   const textError = !b.text?.trim()
   const hrefError = !b.href?.trim() || !isSafeHref(b.href)
+  const field = fieldStyle(mobileMode)
 
   return (
     <div
@@ -239,19 +255,19 @@ function SortableButtonRow({
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0.5 : 1,
         position: 'relative',
         zIndex: isDragging ? 1 : 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: 8,
-        padding: 10,
-        borderRadius: 10,
+        gap: mobileMode ? 5 : 6,
+        padding: mobileMode ? 6 : 7,
+        borderRadius: 8,
         background: '#ffffff0f',
         border: '1px solid #ffffff1f',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span
           {...attributes}
           {...listeners}
@@ -259,7 +275,7 @@ function SortableButtonRow({
           style={{
             cursor: isDragging ? 'grabbing' : 'grab',
             color: '#ffffff88',
-            fontSize: 15,
+            fontSize: mobileMode ? 11 : 13,
             padding: '0 2px',
             touchAction: 'none',
             userSelect: 'none',
@@ -267,16 +283,22 @@ function SortableButtonRow({
         >
           ⠿
         </span>
-        <span style={{ opacity: 0.5, fontSize: 12, minWidth: 54 }}>
+        <span style={{ opacity: 0.5, fontSize: mobileMode ? 10 : 11, minWidth: mobileMode ? 46 : 50 }}>
           {i === 0 ? 'Primario' : i === 1 ? 'Secundario' : `Terciario`}
         </span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          <button type="button" style={iconBtn(i > 0)} onClick={() => onMove(-1)} title="Subir" disabled={i === 0}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+          <button
+            type="button"
+            style={iconBtn(i > 0, mobileMode)}
+            onClick={() => onMove(-1)}
+            title="Subir"
+            disabled={i === 0}
+          >
             ↑
           </button>
           <button
             type="button"
-            style={iconBtn(i < total - 1)}
+            style={iconBtn(i < total - 1, mobileMode)}
             onClick={() => onMove(1)}
             title="Bajar"
             disabled={i === total - 1}
@@ -285,7 +307,7 @@ function SortableButtonRow({
           </button>
           <button
             type="button"
-            style={{ ...iconBtn(true), borderColor: '#ff8a8a55', color: '#ff8a8a' }}
+            style={{ ...iconBtn(true, mobileMode), borderColor: '#ff8a8a55', color: '#ff8a8a' }}
             onClick={onRemove}
             title="Eliminar"
           >
@@ -294,8 +316,8 @@ function SortableButtonRow({
         </div>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span style={{ opacity: 0.7 }}>Texto</span>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Texto</span>
         <input
           style={{ ...field, borderColor: textError ? '#ff8a8a' : '#ffffff3b' }}
           value={b.text}
@@ -303,13 +325,9 @@ function SortableButtonRow({
         />
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span style={{ opacity: 0.7 }}>Tipo de destino</span>
-        <select
-          style={field}
-          value={b.hrefType}
-          onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType })}
-        >
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Tipo de destino</span>
+        <select style={field} value={b.hrefType} onChange={(e) => onUpdate({ hrefType: e.target.value as HrefType })}>
           {(Object.keys(TYPE_LABELS) as HrefType[]).map((t) => (
             <option key={t} value={t} style={{ color: '#000' }}>
               {TYPE_LABELS[t]}
@@ -318,8 +336,8 @@ function SortableButtonRow({
         </select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <span style={{ opacity: 0.7 }}>Destino</span>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span style={{ opacity: 0.7, fontSize: mobileMode ? 11 : 12 }}>Destino</span>
         {b.hrefType === 'anchor' ? (
           <select
             style={{ ...field, borderColor: hrefError ? '#ff8a8a' : ('#ffffff3b') }}
@@ -360,9 +378,9 @@ function SortableButtonRow({
           />
         )}
         {(b.hrefType === 'whatsapp' || b.hrefType === 'phone') && b.href.trim() && (
-          <span style={{ opacity: 0.55, fontSize: 12 }}>→ {resolveButtonHref(b)}</span>
+          <span style={{ opacity: 0.55, fontSize: 11 }}>→ {resolveButtonHref(b)}</span>
         )}
-        {hrefError && <span style={{ color: '#ff8a8a', fontSize: 12 }}>Falta el destino o no está permitido.</span>}
+        {hrefError && <span style={{ color: '#ff8a8a', fontSize: 11 }}>Falta el destino o no está permitido.</span>}
       </label>
 
       {mobileMode && (
