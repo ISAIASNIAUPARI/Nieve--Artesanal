@@ -20,6 +20,7 @@ export default function CtaBanner({
 }) {
   const isMobile = useIsMobileView()
   return (
+    <>
     <section
       id={id}
       style={{
@@ -119,15 +120,16 @@ export default function CtaBanner({
           align="center"
           style={{ marginTop: 8 }}
         />
-        {edit && onChange && !isMobile && (
-          <ButtonsEditor
-            buttons={data.buttons ?? []}
-            onChange={(b) => onChange((prev) => ({ ...prev, buttons: b }))}
-            sectionLabel="Banner"
-            max={2}
-          />
-        )}
       </div>
     </section>
+    {edit && onChange && !isMobile && (
+      <ButtonsEditor
+        buttons={data.buttons ?? []}
+        onChange={(b) => onChange((prev) => ({ ...prev, buttons: b }))}
+        sectionLabel="Banner"
+        max={2}
+      />
+    )}
+    </>
   )
 }
