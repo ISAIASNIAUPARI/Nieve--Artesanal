@@ -44,6 +44,11 @@
       "id": "text-block-texto",
       "label": "TEXTO",
       "visible": true
+    },
+    {
+      "id": "cta-banner-contactos",
+      "label": "CONTACTOS",
+      "visible": true
     }
   ]
 }
