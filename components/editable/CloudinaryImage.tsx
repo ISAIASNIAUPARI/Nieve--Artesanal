@@ -48,7 +48,7 @@ export default function CloudinaryImage({
   const objectPosition = focalPosition({ focalX, focalY })
 
   const editCtx = useEditOptional()
-  const dropZoneActive = !!editCtx?.isDraggingFile
+  const dropZoneActive = editCtx?.isDraggingFile === 'image'
 
   useEffect(() => {
     return () => {

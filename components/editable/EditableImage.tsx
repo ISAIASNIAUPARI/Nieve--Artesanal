@@ -58,7 +58,7 @@ export default function EditableImage({
   // isDraggingFile viene de EditProvider (solo existe dentro del /admin); en el sitio
   // público este hook devuelve null y la zona de drop simplemente no se pinta.
   const editCtx = useEditOptional()
-  const dropZoneActive = !!editCtx?.isDraggingFile
+  const dropZoneActive = editCtx?.isDraggingFile === 'image'
 
   useEffect(() => {
     return () => {
