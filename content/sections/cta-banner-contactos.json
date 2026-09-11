@@ -1,7 +1,14 @@
 {
   "type": "cta-banner",
   "subtitle": "",
-  "heading": "",
-  "description": "",
-  "buttons": []
+  "heading": "Contáctanos",
+  "description": "al numero",
+  "buttons": [
+    {
+      "id": "9c2cb76b-5c4a-4a3d-97d3-6cb029dcaa1d",
+      "text": "0998381419",
+      "href": "#hero",
+      "hrefType": "phone"
+    }
+  ]
 }
