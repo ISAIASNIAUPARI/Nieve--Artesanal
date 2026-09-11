@@ -26,13 +26,13 @@
       "visible": true
     },
     {
-      "id": "location",
-      "label": "Ubicación",
+      "id": "faq-dedicado-a",
+      "label": "DEDICADO a",
       "visible": true
     },
     {
-      "id": "faq-dedicado-a",
-      "label": "DEDICADO a",
+      "id": "location",
+      "label": "Ubicación",
       "visible": true
     }
   ]

@@ -1,5 +1,21 @@
 {
   "type": "faq",
   "heading": "",
-  "items": []
+  "items": [
+    {
+      "id": "b31efeaa-fd54-4e36-ab66-fb58a8ac5a02",
+      "question": "",
+      "answer": ""
+    },
+    {
+      "id": "b87a3d47-afe5-441f-b1d4-c189d71bf055",
+      "question": "",
+      "answer": ""
+    },
+    {
+      "id": "6b65bae3-263a-4db7-a846-a9a8c220aeed",
+      "question": "",
+      "answer": ""
+    }
+  ]
 }
