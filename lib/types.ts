@@ -304,6 +304,8 @@ export interface FaqItem {
 
 export interface CtaBannerData {
   type: 'cta-banner'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
   heading: string
   description: string
   buttons: Button[]
@@ -312,11 +314,15 @@ export interface CtaBannerData {
 }
 export interface MenuGridData {
   type: 'menu-grid'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
   heading: string
   items: MenuCard[]
 }
 export interface TextBlockData {
   type: 'text-block'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
   heading: string
   paragraphs: TextParagraph[]
   /** Imagen opcional sobre el texto (3:2). */
@@ -324,11 +330,15 @@ export interface TextBlockData {
 }
 export interface PhotoGalleryData {
   type: 'photo-gallery'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
   heading: string
   images: GalleryPhoto[]
 }
 export interface FaqData {
   type: 'faq'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
   heading: string
   items: FaqItem[]
 }
@@ -352,19 +362,22 @@ export function slugify(value: string): string {
     .slice(0, 40)
 }
 
-/** Estructura vacía de una sección según su plantilla. */
+/**
+ * Estructura vacía de una sección según su plantilla. `subtitle` siempre arranca en ""
+ * — nunca en el label que el cliente le puso a la sección al crearla.
+ */
 export function emptyDynamicSection(type: SectionTemplateType): DynamicSectionData {
   switch (type) {
     case 'cta-banner':
-      return { type, heading: '', description: '', buttons: [] }
+      return { type, subtitle: '', heading: '', description: '', buttons: [] }
     case 'menu-grid':
-      return { type, heading: '', items: [] }
+      return { type, subtitle: '', heading: '', items: [] }
     case 'text-block':
-      return { type, heading: '', paragraphs: [] }
+      return { type, subtitle: '', heading: '', paragraphs: [] }
     case 'photo-gallery':
-      return { type, heading: '', images: [] }
+      return { type, subtitle: '', heading: '', images: [] }
     case 'faq':
-      return { type, heading: '', items: [] }
+      return { type, subtitle: '', heading: '', items: [] }
   }
 }
 
