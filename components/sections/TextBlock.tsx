@@ -3,6 +3,7 @@
 import type { TextBlockData, TextParagraph } from '@/lib/types'
 import { newItemId } from '@/lib/types'
 import EditableText from '../editable/EditableText'
+import CloudinaryImage from '../editable/CloudinaryImage'
 import { AddButton, ItemControls, SectionHeading, SectionShell, moved } from './sectionKit'
 
 export default function TextBlock({
@@ -24,6 +25,21 @@ export default function TextBlock({
   return (
     <SectionShell id={id}>
       <SectionHeading heading={data.heading} edit={edit} onChange={(v) => onChange?.({ ...data, heading: v })} />
+      {(edit || data.image?.src) && (
+        <CloudinaryImage
+          src={data.image?.src}
+          alt={data.image?.alt}
+          edit={edit}
+          onUploaded={(url) => onChange?.({ ...data, image: { ...data.image, src: url } })}
+          focalX={data.image?.focalX}
+          focalY={data.image?.focalY}
+          aspectRatio={3 / 2}
+          onFocalChange={(x, y) =>
+            onChange?.({ ...data, image: { src: data.image?.src ?? '', alt: data.image?.alt, focalX: x, focalY: y } })
+          }
+          wrapperStyle={{ maxWidth: 680, margin: '0 auto 32px', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}
+        />
+      )}
       <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
         {paragraphs.map((p, i) => (
           <div key={p.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>

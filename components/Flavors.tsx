@@ -11,22 +11,37 @@ function Tile({
   caption,
   edit,
   style,
+  aspectRatio,
   onImageFile,
   onCaptionChange,
+  onFocalChange,
   upload,
 }: {
   image?: ImageValue
   caption?: string
   edit?: boolean
   style: React.CSSProperties
+  aspectRatio: number
   onImageFile?: (file: File) => void
   onCaptionChange?: (value: string) => void
+  onFocalChange?: (x: number, y: number) => void
   upload?: MediaUploadStatus
 }) {
   if (!edit && !image?.src) return null
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', ...style }}>
-      <EditableImage src={image?.src} alt={image?.alt} edit={edit} onFile={onImageFile} upload={upload} wrapperStyle={{ width: '100%', height: '100%' }} />
+      <EditableImage
+        src={image?.src}
+        alt={image?.alt}
+        edit={edit}
+        onFile={onImageFile}
+        upload={upload}
+        focalX={image?.focalX}
+        focalY={image?.focalY}
+        aspectRatio={aspectRatio}
+        onFocalChange={onFocalChange}
+        wrapperStyle={{ width: '100%', height: '100%' }}
+      />
       {(edit || caption) && (
         <div
           style={{
@@ -57,10 +72,11 @@ interface FlavorsProps {
   onChange?: (field: keyof FlavorsSectionData, value: string) => void
   onButtonsChange?: (buttons: Button[]) => void
   onImageChange?: (field: keyof FlavorsSectionData, file: File) => void
+  onFocalChange?: (field: keyof FlavorsSectionData, x: number, y: number) => void
   uploads?: Record<string, MediaUploadStatus>
 }
 
-export default function Flavors({ data, edit, onChange, onButtonsChange, onImageChange, uploads }: FlavorsProps) {
+export default function Flavors({ data, edit, onChange, onButtonsChange, onImageChange, onFocalChange, uploads }: FlavorsProps) {
   if (!data) return null
 
   return (
@@ -88,8 +104,10 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
           caption={data.featuredImageCaption}
           edit={edit}
           style={{ gridRow: 'span 2' }}
+          aspectRatio={4 / 3}
           onImageFile={(file) => onImageChange?.('featuredImage', file)}
           onCaptionChange={(v) => onChange?.('featuredImageCaption', v)}
+          onFocalChange={(x, y) => onFocalChange?.('featuredImage', x, y)}
           upload={uploads?.featuredImage}
         />
         <Tile
@@ -97,8 +115,10 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
           caption={data.secondaryImage1Caption}
           edit={edit}
           style={{ aspectRatio: '4/3' }}
+          aspectRatio={1}
           onImageFile={(file) => onImageChange?.('secondaryImage1', file)}
           onCaptionChange={(v) => onChange?.('secondaryImage1Caption', v)}
+          onFocalChange={(x, y) => onFocalChange?.('secondaryImage1', x, y)}
           upload={uploads?.secondaryImage1}
         />
         <Tile
@@ -106,8 +126,10 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
           caption={data.secondaryImage2Caption}
           edit={edit}
           style={{ aspectRatio: '4/3' }}
+          aspectRatio={1}
           onImageFile={(file) => onImageChange?.('secondaryImage2', file)}
           onCaptionChange={(v) => onChange?.('secondaryImage2Caption', v)}
+          onFocalChange={(x, y) => onFocalChange?.('secondaryImage2', x, y)}
           upload={uploads?.secondaryImage2}
         />
       </div>
@@ -118,8 +140,10 @@ export default function Flavors({ data, edit, onChange, onButtonsChange, onImage
             caption={data.bannerImageCaption}
             edit={edit}
             style={{ aspectRatio: '21/7' }}
+            aspectRatio={21 / 7}
             onImageFile={(file) => onImageChange?.('bannerImage', file)}
             onCaptionChange={(v) => onChange?.('bannerImageCaption', v)}
+            onFocalChange={(x, y) => onFocalChange?.('bannerImage', x, y)}
             upload={uploads?.bannerImage}
           />
         </div>

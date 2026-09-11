@@ -44,6 +44,10 @@ export default function PhotoGallery({
                 alt={photo.image?.alt || photo.caption}
                 edit={edit}
                 onUploaded={(url) => patch(photo.id, { image: { ...photo.image, src: url } })}
+                focalX={photo.image?.focalX}
+                focalY={photo.image?.focalY}
+                aspectRatio={4 / 3}
+                onFocalChange={(x, y) => patch(photo.id, { image: { ...photo.image, focalX: x, focalY: y } })}
                 wrapperStyle={{ width: '100%', height: '100%' }}
               />
             </div>
