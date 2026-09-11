@@ -29,6 +29,11 @@
       "id": "location",
       "label": "Ubicación",
       "visible": true
+    },
+    {
+      "id": "faq-preguntas-frecuentes",
+      "label": "PREGUNTAS FRECUENTES",
+      "visible": true
     }
   ]
 }
