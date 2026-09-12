@@ -43,14 +43,21 @@ html {
   color: var(--accent-dark);
 }
 
+/* margin-top en vez de transform: translateY — un transform activo (aunque sea
+   translateY(0) durante la animación) convierte a este elemento en el "containing
+   block" de sus descendientes position:absolute. El Hero usa esta animación en el
+   div que envuelve los botones de posición libre (SectionButtons) — con transform,
+   esos botones calculaban su % contra este div angosto en vez del <section>
+   completo mientras duraba la animación, y se veían amontonados hasta que
+   terminaba. margin-top no crea containing block, así que no tiene ese problema. */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    margin-top: 16px;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    margin-top: 0;
   }
 }
 
