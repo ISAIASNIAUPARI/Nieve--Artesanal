@@ -7,6 +7,7 @@ type UploadState =
   | { phase: 'optimizing' }
   | { phase: 'uploading' }
   | { phase: 'done' }
+  | { phase: 'done-manual'; url: string }
   | { phase: 'error'; message: string }
 
 const MAX_BYTES = 50 * 1024 * 1024
@@ -51,11 +52,27 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       const form = new FormData()
       form.append('file', file)
       const res = await fetch('/api/admin/upload-3d', { method: 'POST', body: form })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Error al subir el modelo.')
+      // Si la respuesta no es JSON (ej. un 413/502/504 del propio hosting, antes
+      // de que nuestra ruta llegue a ejecutarse), data.error queda vacío — mejor
+      // mostrar el status HTTP que un mensaje genérico sin ninguna pista.
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.ok) {
+        const detail =
+          data?.error ||
+          `Error del servidor (${res.status}${res.statusText ? ' ' + res.statusText : ''}). Si el archivo es grande, puede deberse al límite de tamaño de subida del hosting.`
+        throw new Error(detail)
+      }
       if (stageTimer.current) clearTimeout(stageTimer.current)
-      setState({ phase: 'done' })
-      onUploaded(data.glbUrl)
+      // A partir de acá el .glb YA está en Cloudinary — si onUploaded() falla al
+      // actualizar el campo en el admin, no es un error de subida: no hay que
+      // perder la URL ni pedirle al usuario que vuelva a subir el archivo.
+      try {
+        onUploaded(data.glbUrl)
+        setState({ phase: 'done' })
+      } catch (callbackErr) {
+        console.error('[Glb3DUploader] subida exitosa pero falló al actualizar el campo:', callbackErr)
+        setState({ phase: 'done-manual', url: data.glbUrl })
+      }
     } catch (err) {
       if (stageTimer.current) clearTimeout(stageTimer.current)
       setState({ phase: 'error', message: err instanceof Error ? err.message : 'Error al subir el modelo.' })
@@ -107,6 +124,14 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
         {state.phase === 'uploading' && <span>⏳ Subiendo a Cloudinary…</span>}
         {state.phase === 'done' && (
           <span style={{ color: '#2f8f52', fontWeight: 600 }}>✓ Modelo actualizado — Guarda los cambios para publicar</span>
+        )}
+        {state.phase === 'done-manual' && (
+          <span style={{ color: '#c0392b' }}>
+            ⚠ El modelo se subió, pero no se pudo actualizar el campo automáticamente. Copia esta URL y pégala
+            manualmente en el campo del modelo 3D:
+            <br />
+            <span style={{ wordBreak: 'break-all', fontWeight: 600 }}>{state.url}</span>
+          </span>
         )}
         {state.phase === 'error' && (
           <span style={{ color: '#c0392b' }}>

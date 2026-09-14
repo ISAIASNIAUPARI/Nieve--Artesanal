@@ -12,6 +12,9 @@ export const runtime = 'nodejs'
 // La optimización (weld/dedup/prune/textureCompress) puede tardar más que una
 // firma simple — margen generoso para modelos grandes.
 export const maxDuration = 60
+// Esta ruta sube un archivo binario en cada request — nunca debe cachearse ni
+// intentar generarse estáticamente.
+export const dynamic = 'force-dynamic'
 
 // Variables de entorno que necesita esta ruta (configuradas en Vercel → Settings →
 // Environment Variables, NUNCA en el código ni como NEXT_PUBLIC_):
