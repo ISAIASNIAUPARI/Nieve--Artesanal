@@ -7,6 +7,7 @@ import type {
   MediaUploadStatus,
   PageLayout,
   SectionKey,
+  Theme,
 } from '@/lib/types'
 import { isBaseSectionId } from '@/lib/types'
 import { EditProvider, useEdit } from './EditProvider'
@@ -20,7 +21,7 @@ import Location from '@/components/Location'
 import Footer from '@/components/Footer'
 import DynamicSection from '@/components/sections/DynamicSection'
 
-function AdminSite() {
+function AdminSite({ initialTheme }: { initialTheme: Theme }) {
   const { content, layout, dynamic, setField, setButtons, setFocal, setDynamic, uploadMedia, uploads, viewMode } = useEdit()
 
   // uploads viene con claves `${section}.${field}`; cada componente quiere solo su sección.
@@ -165,7 +166,7 @@ function AdminSite() {
 
   return (
     <>
-      <Toolbar />
+      <Toolbar initialTheme={initialTheme} />
       {viewMode === 'mobile' ? (
         <div
           style={{
@@ -200,14 +201,16 @@ export default function AdminApp({
   initialContent,
   initialLayout,
   initialDynamic,
+  initialTheme,
 }: {
   initialContent: HomePageData
   initialLayout: PageLayout
   initialDynamic: Record<string, DynamicSectionData>
+  initialTheme: Theme
 }) {
   return (
     <EditProvider initialContent={initialContent} initialLayout={initialLayout} initialDynamic={initialDynamic}>
-      <AdminSite />
+      <AdminSite initialTheme={initialTheme} />
     </EditProvider>
   )
 }

@@ -3,13 +3,16 @@ import path from 'node:path'
 import {
   CONTENT_FILES,
   DEFAULT_PAGE_LAYOUT,
+  DEFAULT_THEME,
   PAGE_LAYOUT_FILE,
+  THEME_FILE,
   normalizePageLayout,
   templateTypeOf,
   type DynamicSectionData,
   type HomePageData,
   type PageLayout,
   type SectionKey,
+  type Theme,
 } from './types'
 
 const CONTENT_DIR = path.join(process.cwd(), 'content')
@@ -48,6 +51,11 @@ export function getHomePageData(): HomePageData {
 /** Orden y visibilidad de las secciones de la página (content/pageLayout.json). */
 export function getPageLayout(): PageLayout {
   return normalizePageLayout(readJsonSafe(PAGE_LAYOUT_FILE, DEFAULT_PAGE_LAYOUT))
+}
+
+/** Los 3 colores de marca del sitio (content/theme.json). */
+export function getTheme(): Theme {
+  return readJsonSafe(THEME_FILE, DEFAULT_THEME)
 }
 
 const DYNAMIC_ID = /^[a-z0-9-]+$/
