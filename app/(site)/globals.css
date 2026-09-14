@@ -1,11 +1,26 @@
 :root {
-  --bg: oklch(97.5% 0.012 80);
-  --ink: oklch(27% 0.035 45);
-  --ink-soft: oklch(45% 0.03 45);
-  --line: oklch(90% 0.015 80);
-  --accent: oklch(64% 0.17 35);
-  --accent-dark: oklch(50% 0.15 35);
-  --accent-light: oklch(80% 0.1 35);
+  /* Respaldo si el layout raíz no llegara a inyectar --color-* en <html> (no
+     debería pasar — siempre lee content/theme.json) — mismos valores que
+     DEFAULT_THEME en lib/types.ts, para que la página nunca se quede sin
+     colores. Los valores reales del cliente pisan estos vía inline style. */
+  --color-primary: #e05d3d;
+  --color-secondary: #fbf6ee;
+  --color-accent: #352118;
+
+  /* --accent/--bg/--ink son las variables que usa TODO el sitio (~30 sitios en
+     los componentes) — en vez de reescribir cada uno para que apunte a
+     --color-primary/secondary/accent, se dejan como alias: así todo el sitio
+     sigue el tema nuevo sin tocar un solo componente. Los "derivados"
+     (ink-soft, line, accent-dark, accent-light) se calculan con color-mix()
+     a partir del color base correspondiente, para que se mantengan
+     proporcionales sin importar qué color elija el cliente. */
+  --bg: var(--color-secondary);
+  --ink: var(--color-accent);
+  --ink-soft: color-mix(in oklch, var(--ink) 75%, white);
+  --line: color-mix(in oklch, var(--bg) 90%, var(--ink) 10%);
+  --accent: var(--color-primary);
+  --accent-dark: color-mix(in oklch, var(--accent) 80%, black);
+  --accent-light: color-mix(in oklch, var(--accent) 55%, white);
 }
 
 html {

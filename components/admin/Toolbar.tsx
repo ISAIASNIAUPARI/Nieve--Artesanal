@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import type { Theme } from '@/lib/types'
 import { useEdit } from './EditProvider'
 import LayoutPanel from './LayoutPanel'
+import ThemePanel from './ThemePanel'
 
 const viewModeBtn = (active: boolean): React.CSSProperties => ({
   border: '1px solid #ffffff3b',
@@ -14,10 +16,11 @@ const viewModeBtn = (active: boolean): React.CSSProperties => ({
   cursor: 'pointer',
 })
 
-export default function Toolbar() {
+export default function Toolbar({ initialTheme }: { initialTheme: Theme }) {
   const { isDirty, saving, saveError, lastSaved, save, uploads, viewMode, setViewMode } = useEdit()
   const busyUploading = Object.values(uploads).some((u) => !u.error)
   const [layoutOpen, setLayoutOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
 
   return (
     <div
@@ -57,9 +60,26 @@ export default function Toolbar() {
         >
           ☰ Organizar página
         </button>
+        <button
+          type="button"
+          onClick={() => setThemeOpen(true)}
+          style={{
+            border: '1px solid #ffffff3b',
+            background: '#ffffff12',
+            color: '#fff',
+            borderRadius: 999,
+            padding: '6px 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          🎨 Personalizar tema
+        </button>
       </div>
 
       {layoutOpen && <LayoutPanel onClose={() => setLayoutOpen(false)} />}
+      {themeOpen && <ThemePanel initialTheme={initialTheme} onClose={() => setThemeOpen(false)} />}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {saveError && <span style={{ color: '#ff8a8a' }}>⚠ {saveError}</span>}

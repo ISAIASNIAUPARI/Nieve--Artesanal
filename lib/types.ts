@@ -111,6 +111,35 @@ export function validateButtons(
   return null
 }
 
+/**
+ * Los 3 colores de marca del sitio, editables desde /admin → "Personalizar tema"
+ * (content/theme.json). colorPrimary es el naranja de acento, colorSecondary el
+ * crema de fondo, colorAccent el café oscuro — nombres del esquema tal cual los
+ * usa el panel; el layout raíz los inyecta como --color-primary/--color-secondary/
+ * --color-accent en <html>, y globals.css los conecta con --accent/--bg/--ink
+ * (las variables que ya usa todo el sitio) para que no haga falta tocar
+ * ningún componente.
+ */
+export interface Theme {
+  colorPrimary: string
+  colorSecondary: string
+  colorAccent: string
+}
+
+export const THEME_FILE = 'theme.json'
+
+export const DEFAULT_THEME: Theme = {
+  colorPrimary: '#e05d3d',
+  colorSecondary: '#fbf6ee',
+  colorAccent: '#352118',
+}
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/
+
+export function isValidHexColor(value: unknown): value is string {
+  return typeof value === 'string' && HEX_COLOR.test(value)
+}
+
 export interface SiteSettingsData {
   brandName?: string
   footerNote?: string
