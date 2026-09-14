@@ -76,24 +76,33 @@ export default function SectionButtons({
       fontSize: 15,
       lineHeight: 1.2,
     }
+    let computed: React.CSSProperties
     if (index === 0) {
-      if (tone === 'onAccent') return { ...base, background: '#fff', color: 'var(--accent)' }
-      return { ...base, background: 'var(--accent)', color: '#fff' }
-    }
-    if (index === 1)
-      return {
+      computed = tone === 'onAccent' ? { ...base, background: '#fff', color: 'var(--accent)' } : { ...base, background: 'var(--accent)', color: '#fff' }
+    } else if (index === 1) {
+      computed = {
         ...base,
         background: 'transparent',
         border: `1px solid ${onDark ? '#fff' : 'var(--accent)'}`,
         color: onDark ? '#fff' : 'var(--accent)',
       }
-    return {
-      ...base,
-      padding: '14px 22px',
-      background: 'transparent',
-      border: `1px solid ${onDark ? '#ffffff77' : 'var(--line)'}`,
-      color: fg,
+    } else {
+      computed = {
+        ...base,
+        padding: '14px 22px',
+        background: 'transparent',
+        border: `1px solid ${onDark ? '#ffffff77' : 'var(--line)'}`,
+        color: fg,
+      }
     }
+
+    // Color elegido a mano en el botón (ButtonsEditor → "Color del botón") pisa
+    // el fondo por defecto de arriba (primario/secundario/terciario) — el resto
+    // del estilo (padding, borde, texto) se queda igual.
+    const colorChoice = list[index]?.color
+    if (colorChoice) computed = { ...computed, background: `var(--color-${colorChoice})` }
+
+    return computed
   }
 
   const xKey: XKey = isMobile ? 'mobileX' : 'desktopX'

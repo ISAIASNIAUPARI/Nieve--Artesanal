@@ -1,21 +1,142 @@
 'use client'
 
+import type { ThemeColorChoice } from '@/lib/types'
 import EditableText from '../editable/EditableText'
 import { useIsMobileView } from '../useIsMobileView'
 
-/** Cáscara de sección: mismo padding y ancho que el resto del sitio. */
+const COLOR_CHOICES: { value: ThemeColorChoice; cssVar: string }[] = [
+  { value: 'primary', cssVar: 'var(--color-primary)' },
+  { value: 'secondary', cssVar: 'var(--color-secondary)' },
+  { value: 'accent', cssVar: 'var(--color-accent)' },
+]
+
+/**
+ * Fila de círculos (20px) para elegir uno de los 3 colores del tema, o "sin
+ * color" (✕, vuelve al default). Los círculos pintan el color REAL actual del
+ * tema vía var(--color-*) — si el cliente lo cambia en "Personalizar tema",
+ * se actualizan solos, sin tocar este componente.
+ */
+export function ColorSwatchPicker({
+  value,
+  onChange,
+  variant = 'light',
+}: {
+  value?: ThemeColorChoice
+  onChange: (next: ThemeColorChoice | undefined) => void
+  /** 'dark' para paneles oscuros (ej. ButtonsEditor) — ajusta el color del anillo/bordes. */
+  variant?: 'light' | 'dark'
+}) {
+  const ring = variant === 'dark' ? '#fff' : 'var(--ink)'
+  const restBorder = variant === 'dark' ? '#ffffff55' : '#00000022'
+  const dashedBorder = variant === 'dark' ? '#ffffff77' : '#00000055'
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {COLOR_CHOICES.map((c) => (
+        <button
+          key={c.value}
+          type="button"
+          title={c.value}
+          onClick={() => onChange(c.value)}
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: '50%',
+            background: c.cssVar,
+            border: value === c.value ? `2px solid ${ring}` : `1px solid ${restBorder}`,
+            cursor: 'pointer',
+            padding: 0,
+          }}
+        />
+      ))}
+      <button
+        type="button"
+        title="Sin color"
+        onClick={() => onChange(undefined)}
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          background: 'transparent',
+          border: !value ? `2px solid ${ring}` : `1px dashed ${dashedBorder}`,
+          color: ring,
+          fontSize: 10,
+          lineHeight: '16px',
+          cursor: 'pointer',
+          padding: 0,
+        }}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+/** Overlay "Fondo" (edit-only) en la esquina de una sección — mismo picker de arriba,
+ * en una píldora clara para verse encima de cualquier fondo/imagen. */
+function BackgroundColorOverlay({
+  backgroundColor,
+  onBackgroundColorChange,
+}: {
+  backgroundColor?: ThemeColorChoice
+  onBackgroundColorChange: (next: ThemeColorChoice | undefined) => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 20,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        background: '#ffffffee',
+        padding: '5px 9px',
+        borderRadius: 999,
+        boxShadow: '0 2px 8px #00000022',
+        fontFamily: 'system-ui, sans-serif',
+      }}
+    >
+      <span style={{ fontSize: 10, color: 'var(--ink-soft)', fontWeight: 600 }}>Fondo</span>
+      <ColorSwatchPicker value={backgroundColor} onChange={onBackgroundColorChange} />
+    </div>
+  )
+}
+
+/** Cáscara de sección: mismo padding y ancho que el resto del sitio. Con
+ * `backgroundColor` (uno de los 3 colores del tema) tiñe el fondo de la
+ * sección entera; en edición, `onBackgroundColorChange` habilita el selector
+ * flotante "Fondo" en la esquina para elegirlo. */
 export function SectionShell({
   id,
   children,
   style,
+  edit,
+  backgroundColor,
+  onBackgroundColorChange,
 }: {
   id: string
   children: React.ReactNode
   style?: React.CSSProperties
+  edit?: boolean
+  backgroundColor?: ThemeColorChoice
+  onBackgroundColorChange?: (next: ThemeColorChoice | undefined) => void
 }) {
   const isMobile = useIsMobileView()
   return (
-    <section id={id} style={{ padding: isMobile ? '48px 20px' : '100px 6vw', ...style }}>
+    <section
+      id={id}
+      style={{
+        position: 'relative',
+        padding: isMobile ? '48px 20px' : '100px 6vw',
+        ...style,
+        ...(backgroundColor ? { background: `var(--color-${backgroundColor})` } : {}),
+      }}
+    >
+      {edit && onBackgroundColorChange && (
+        <BackgroundColorOverlay backgroundColor={backgroundColor} onBackgroundColorChange={onBackgroundColorChange} />
+      )}
       {children}
     </section>
   )

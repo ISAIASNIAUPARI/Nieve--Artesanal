@@ -31,7 +31,12 @@ export default function MenuGrid({
   if (!edit && items.length === 0 && !data.heading) return null
 
   return (
-    <SectionShell id={id}>
+    <SectionShell
+      id={id}
+      edit={edit}
+      backgroundColor={data.backgroundColor}
+      onBackgroundColorChange={(next) => onChange?.((prev) => ({ ...prev, backgroundColor: next }))}
+    >
       <SectionHeading
         heading={data.heading}
         edit={edit}
