@@ -89,7 +89,6 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       const blob = await upload(`raw-tmp/${Date.now()}-${file.name}`, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload-3d-token',
-        multipart: true,
         onUploadProgress: ({ percentage }) => setState({ phase: 'uploading', pct: Math.round(percentage) }),
       })
       await runOptimize(blob.url)
