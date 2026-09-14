@@ -22,50 +22,86 @@ interface RawUploadSign {
   signature: string
 }
 
-/** Sube el .glb crudo directo navegador → Cloudinary con XHR (para progreso real). */
-function uploadRawToCloudinary(file: File, sign: RawUploadSign, onProgress: (pct: number) => void): Promise<void> {
-  const form = new FormData()
-  form.append('file', file)
-  form.append('api_key', sign.apiKey)
-  form.append('timestamp', String(sign.timestamp))
-  form.append('folder', sign.folder)
-  form.append('public_id', sign.publicId)
-  form.append('signature', sign.signature)
+// Cloudinary recomienda partes de 20 MB para subida en partes (mínimo 5 MB,
+// salvo la última). La cuenta de este proyecto tiene un máximo de ~10 MB por
+// petición para recursos "raw" — con el archivo partido en trozos de 20 MB
+// seguiríamos topando ese límite, así que se usa un tamaño de parte por
+// debajo del límite conocido de la cuenta, con margen.
+const CHUNK_SIZE = 8 * 1024 * 1024 // 8 MB
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/raw/upload`)
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
-    }
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve()
-      } else {
-        let msg = `Cloudinary respondió ${xhr.status}.`
-        try {
-          msg = JSON.parse(xhr.responseText)?.error?.message || msg
-        } catch {
-          /* deja el mensaje genérico */
-        }
-        reject(new Error(msg))
+/**
+ * Sube el .glb crudo directo navegador → Cloudinary, partido en trozos
+ * (subida en partes de Cloudinary: mismo endpoint de siempre, pero cada
+ * trozo va con un `Content-Range` y un `X-Unique-Upload-Id` compartido).
+ * Necesario porque la cuenta de Cloudinary tiene un límite de tamaño por
+ * petición individual (~10 MB para recursos "raw") — partiendo el archivo,
+ * ninguna petición sola supera ese límite, sin importar cuánto pese el
+ * archivo completo.
+ */
+function uploadRawToCloudinaryChunked(file: File, sign: RawUploadSign, onProgress: (pct: number) => void): Promise<void> {
+  const uploadId = crypto.randomUUID()
+  const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE))
+
+  function uploadChunk(index: number): Promise<void> {
+    const start = index * CHUNK_SIZE
+    const end = Math.min(start + CHUNK_SIZE, file.size)
+    const chunk = file.slice(start, end)
+
+    const form = new FormData()
+    form.append('file', chunk, file.name)
+    form.append('api_key', sign.apiKey)
+    form.append('timestamp', String(sign.timestamp))
+    form.append('folder', sign.folder)
+    form.append('public_id', sign.publicId)
+    form.append('signature', sign.signature)
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/raw/upload`)
+      xhr.setRequestHeader('X-Unique-Upload-Id', uploadId)
+      xhr.setRequestHeader('Content-Range', `bytes ${start}-${end - 1}/${file.size}`)
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round(((start + e.loaded) / file.size) * 100))
       }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve()
+        } else {
+          let msg = `Cloudinary respondió ${xhr.status}.`
+          try {
+            msg = JSON.parse(xhr.responseText)?.error?.message || msg
+          } catch {
+            /* deja el mensaje genérico */
+          }
+          reject(new Error(msg))
+        }
+      }
+      xhr.onerror = () => reject(new Error('Error de red al subir a Cloudinary.'))
+      xhr.send(form)
+    })
+  }
+
+  return (async () => {
+    for (let i = 0; i < totalChunks; i++) {
+      await uploadChunk(i)
     }
-    xhr.onerror = () => reject(new Error('Error de red al subir a Cloudinary.'))
-    xhr.send(form)
-  })
+  })()
 }
 
 /**
  * Drop zone para reemplazar el .glb de una sección product-3d — en dos pasos:
  *
- *   1. El navegador sube el .glb TAL CUAL directo a Cloudinary (con una firma
- *      de un solo uso de /api/admin/upload-3d-sign), igual que ya hacen las
- *      imágenes y el video. Así nunca pasa por el body de una función
- *      serverless de Vercel — antes, con el archivo pasando entero por
- *      nuestro servidor, cualquier .glb de más de ~4 MB fallaba con un 413
- *      (límite de la plataforma, no de esta app) sin llegar a ejecutarse
- *      nuestro código.
+ *   1. El navegador sube el .glb TAL CUAL directo a Cloudinary, partido en
+ *      trozos (con una firma de un solo uso de /api/admin/upload-3d-sign),
+ *      igual que ya hacen las imágenes y el video (aunque ellas sin partir,
+ *      porque no topan el límite de tamaño de sus resource_type). Así nunca
+ *      pasa por el body de una función serverless de Vercel — antes, con el
+ *      archivo pasando entero por nuestro servidor, cualquier .glb de más de
+ *      ~4 MB fallaba con un 413 (límite de la plataforma, no de esta app)
+ *      sin llegar a ejecutarse nuestro código. Y subir directo pero de una
+ *      sola vez tampoco alcanza: la cuenta de Cloudinary tiene su propio
+ *      límite de ~10 MB por petición para recursos "raw" — por eso va en
+ *      trozos (ver uploadRawToCloudinaryChunked).
  *   2. /api/admin/optimize-3d descarga ese archivo por su URL (un fetch
  *      saliente del servidor no tiene ese límite), lo optimiza con
  *      gltf-transform (mismo pipeline de siempre) y sube la versión final.
@@ -135,7 +171,7 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       if (!signRes.ok || !sign?.ok) {
         throw new Error(sign?.error || 'No se pudo iniciar la subida.')
       }
-      await uploadRawToCloudinary(file, sign, (pct) => setState({ phase: 'uploading', pct }))
+      await uploadRawToCloudinaryChunked(file, sign, (pct) => setState({ phase: 'uploading', pct }))
       await runOptimize(sign.publicId)
     } catch (err) {
       setState({ phase: 'error', message: err instanceof Error ? err.message : 'Error al subir el modelo.' })
