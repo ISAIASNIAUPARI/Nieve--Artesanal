@@ -4,7 +4,7 @@
   "title": "Redes sociales",
   "links": {
     "facebook": "https://www.facebook.com/share/1JGnPmms8z/",
-    "instagram": "https://www.instagram.com/isaias.ai_",
+    "instagram": "https://www.instagram.com/ameeaaep?stkn=djl2cjg1cjc1cGIz",
     "tiktok": "https://www.tiktok.com/@isai.as1?_r=1&_t=ZS-99jOxi4pQNm"
   },
   "videos": [
@@ -12,5 +12,6 @@
     "https://res.cloudinary.com/foewxv45/video/upload/q_auto,f_auto/redes-sociales/redes-sociales/video2.mp4",
     "https://res.cloudinary.com/foewxv45/video/upload/v1789411354/nieve-artesanal/reaywpldqpxvlfsbc6dm.mp4",
     "https://res.cloudinary.com/foewxv45/video/upload/q_auto,f_auto/redes-sociales/redes-sociales/video4.mp4"
-  ]
+  ],
+  "backgroundColor": "secondary"
 }
