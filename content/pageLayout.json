@@ -41,6 +41,11 @@
       "visible": true
     },
     {
+      "id": "test-3d",
+      "label": "Producto 3D",
+      "visible": true
+    },
+    {
       "id": "cta-banner-contactos",
       "label": "CONTACTOS",
       "visible": true
@@ -48,11 +53,6 @@
     {
       "id": "location",
       "label": "Ubicación",
-      "visible": true
-    },
-    {
-      "id": "test-3d",
-      "label": "Producto 3D",
       "visible": true
     }
   ]
