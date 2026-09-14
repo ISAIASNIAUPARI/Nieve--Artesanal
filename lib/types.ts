@@ -23,6 +23,10 @@ export interface Button {
   text: string
   href: string
   hrefType: HrefType
+  /** Fuerza el color de fondo del botón a uno de los 3 colores del tema — sin
+   * definir, usa su estilo de siempre (primario/secundario/terciario según su
+   * posición). Ver ThemeColorChoice. */
+  color?: ThemeColorChoice
   /**
    * Posición libre estilo Wix, en % (0-100) del área de la sección. Hay dos pares
    * totalmente independientes — mover un botón en una vista nunca toca los datos
@@ -139,6 +143,14 @@ const HEX_COLOR = /^#[0-9a-fA-F]{6}$/
 export function isValidHexColor(value: unknown): value is string {
   return typeof value === 'string' && HEX_COLOR.test(value)
 }
+
+/**
+ * Referencia a uno de los 3 colores del tema (nunca un hex suelto) — así un
+ * botón o el fondo de una sección se quedan "enganchados" al tema: si el
+ * cliente cambia colorPrimary en "Personalizar tema", todo lo que eligió
+ * 'primary' cambia solo, sin tener que volver a tocarlo.
+ */
+export type ThemeColorChoice = 'primary' | 'secondary' | 'accent'
 
 export interface SiteSettingsData {
   brandName?: string
@@ -352,6 +364,8 @@ export interface CtaBannerData {
   buttons: Button[]
   /** Fondo opcional detrás del texto (16:9). */
   image?: ImageValue
+  /** Sin definir, usa el fondo por defecto de la plantilla (var(--accent) en este caso). */
+  backgroundColor?: ThemeColorChoice
 }
 export interface MenuGridData {
   type: 'menu-grid'
@@ -359,6 +373,8 @@ export interface MenuGridData {
   subtitle?: string
   heading: string
   items: MenuCard[]
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
 }
 export interface TextBlockData {
   type: 'text-block'
@@ -368,6 +384,8 @@ export interface TextBlockData {
   paragraphs: TextParagraph[]
   /** Imagen opcional sobre el texto (3:2). */
   image?: ImageValue
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
 }
 export interface PhotoGalleryData {
   type: 'photo-gallery'
@@ -375,6 +393,8 @@ export interface PhotoGalleryData {
   subtitle?: string
   heading: string
   images: GalleryPhoto[]
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
 }
 export interface FaqData {
   type: 'faq'
@@ -382,6 +402,8 @@ export interface FaqData {
   subtitle?: string
   heading: string
   items: FaqItem[]
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
 }
 
 export type DynamicSectionData = CtaBannerData | MenuGridData | TextBlockData | PhotoGalleryData | FaqData

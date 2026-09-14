@@ -4,6 +4,7 @@ import type { CtaBannerData } from '@/lib/types'
 import EditableText from '../editable/EditableText'
 import CloudinaryImage from '../editable/CloudinaryImage'
 import SectionButtons from './SectionButtons'
+import { ColorSwatchPicker } from './sectionKit'
 import dynamic from 'next/dynamic'
 
 // Solo se pinta en /admin — cargado aparte para que el sitio público nunca
@@ -30,11 +31,35 @@ export default function CtaBanner({
       style={{
         position: 'relative',
         padding: isMobile ? '48px 20px' : '80px 6vw',
-        background: 'var(--accent)',
+        background: data.backgroundColor ? `var(--color-${data.backgroundColor})` : 'var(--accent)',
         color: '#fff',
         overflow: 'hidden',
       }}
     >
+      {edit && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: '#ffffffee',
+            padding: '5px 9px',
+            borderRadius: 999,
+            boxShadow: '0 2px 8px #00000022',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
+          <span style={{ fontSize: 10, color: 'var(--ink-soft)', fontWeight: 600 }}>Fondo</span>
+          <ColorSwatchPicker
+            value={data.backgroundColor}
+            onChange={(next) => onChange?.((prev) => ({ ...prev, backgroundColor: next }))}
+          />
+        </div>
+      )}
       {(edit || data.image?.src) && (
         <CloudinaryImage
           src={data.image?.src}

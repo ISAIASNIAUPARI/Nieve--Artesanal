@@ -6,6 +6,7 @@ import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type D
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEdit } from './EditProvider'
+import { ColorSwatchPicker } from '../sections/sectionKit'
 
 const TYPE_LABELS: Record<HrefType, string> = {
   anchor: 'Misma página',
@@ -338,6 +339,11 @@ function SortableButtonRow({
         )}
         {hrefError && <span style={{ color: '#ff8a8a', fontSize: 9 }}>Falta el destino o no está permitido.</span>}
       </label>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+        <span style={{ opacity: 0.7, fontSize: 10 }}>Color del botón</span>
+        <ColorSwatchPicker value={b.color} onChange={(next) => onUpdate({ color: next })} variant="dark" />
+      </div>
     </div>
   )
 }
