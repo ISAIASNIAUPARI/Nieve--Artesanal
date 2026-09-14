@@ -1,10 +1,16 @@
 'use client'
 
 import React from 'react'
+import dynamic from 'next/dynamic'
 import type { ProductSection3D } from '@/lib/types'
 import EditableText from '../editable/EditableText'
 import { SectionShell } from './sectionKit'
 import { useIsMobileView } from '../useIsMobileView'
+
+// Solo se pinta en /admin — cargado aparte para que el sitio público nunca
+// descargue su código (mismo criterio que ButtonsEditor/FocalPointPicker, ver
+// Obsidian, nota 11, Parte 9).
+const Glb3DUploader = dynamic(() => import('./Glb3DUploader'), { ssr: false })
 
 /**
  * Props de <model-viewer> — un Web Component, no un elemento de React, así
@@ -109,10 +115,13 @@ export default function ProductViewer3D({
             })}
           </div>
           {edit && (
-            <div style={{ marginTop: 8, fontFamily: 'system-ui, sans-serif', fontSize: 11, color: 'var(--ink-soft)' }}>
-              <strong style={{ color: 'var(--ink)' }}>Modelo 3D (.glb):</strong>{' '}
-              <span style={{ wordBreak: 'break-all' }}>{data.glbUrl || 'sin configurar'}</span>
-            </div>
+            <>
+              <div style={{ marginTop: 8, fontFamily: 'system-ui, sans-serif', fontSize: 11, color: 'var(--ink-soft)' }}>
+                <strong style={{ color: 'var(--ink)' }}>Modelo 3D (.glb):</strong>{' '}
+                <span style={{ wordBreak: 'break-all' }}>{data.glbUrl || 'sin configurar'}</span>
+              </div>
+              <Glb3DUploader onUploaded={(url) => onChange?.((prev) => ({ ...prev, glbUrl: url }))} />
+            </>
           )}
         </div>
 
