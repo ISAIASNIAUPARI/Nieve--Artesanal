@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { isAdminRequest } from '@/lib/auth'
 import { commitFiles, type FileChange } from '@/lib/github'
-import { BASE_SECTION_IDS, templateTypeOf, type LayoutSection } from '@/lib/types'
+import { getDynamicSection } from '@/lib/content'
+import { BASE_SECTION_IDS, type LayoutSection } from '@/lib/types'
 
 export const runtime = 'nodejs'
 
@@ -38,7 +39,10 @@ export async function POST(req: Request) {
   if ((BASE_SECTION_IDS as readonly string[]).includes(id)) {
     return NextResponse.json({ ok: false, error: 'No se pueden eliminar las secciones base del sitio.' }, { status: 403 })
   }
-  if (!templateTypeOf(id)) {
+  // Lee el archivo real (content/sections/<id>.json) en vez de adivinar el tipo
+  // por el prefijo del id — un id que no sigue la convención "tipo-lo-que-sea"
+  // (ej. "test-3d" para el tipo 'product-3d') igual se reconoce así.
+  if (!getDynamicSection(id)) {
     return NextResponse.json({ ok: false, error: 'Esa sección no es una sección de plantilla.' }, { status: 400 })
   }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { getTheme } from '@/lib/content'
 import type { Theme } from '@/lib/types'
 
@@ -25,7 +26,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const theme = getTheme()
   return (
     <html lang="es" style={themeStyle(theme)}>
-      <body>{children}</body>
+      <head>
+        {/* Ahorra la vuelta DNS+TLS la primera vez que una sección de producto 3D
+            pide el modelo (Cloudinary) o el script del visor (jsdelivr). */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+      </head>
+      <body>
+        {/* beforeInteractive solo se permite en el layout raíz — por eso vive
+            aquí y no dentro de ProductViewer3D.tsx. Registra el custom element
+            <model-viewer> antes de que React hidrate, así no hay flash sin
+            estilos la primera vez que una página tiene una sección 3D. */}
+        <Script
+          src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"
+          type="module"
+          strategy="beforeInteractive"
+        />
+        {children}
+      </body>
     </html>
   )
 }

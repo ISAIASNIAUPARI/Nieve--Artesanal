@@ -1,0 +1,9 @@
+{
+  "type": "product-3d",
+  "subtitle": "Edición especial",
+  "title": "Producto Estrella",
+  "description": "Descripción del producto. Hecho con los mejores ingredientes.",
+  "glbUrl": "https://res.cloudinary.com/foewxv45/raw/upload/v1788974257/web_con_animacion/camiseta_web.glb",
+  "price": "$35",
+  "priceOriginal": "$45"
+}

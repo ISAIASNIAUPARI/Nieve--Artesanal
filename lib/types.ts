@@ -406,7 +406,39 @@ export interface FaqData {
   backgroundColor?: ThemeColorChoice
 }
 
-export type DynamicSectionData = CtaBannerData | MenuGridData | TextBlockData | PhotoGalleryData | FaqData
+/**
+ * Sección de producto con visor 3D (model-viewer). A diferencia de las 5 de
+ * arriba, todavía no es creable desde "+ Nueva sección" — no está en
+ * SECTION_TEMPLATES a propósito, porque no hay flujo de subida de .glb
+ * todavía (llega después). Por ahora se siembra una instancia a mano
+ * (content/sections/test-3d.json) y este tipo solo se reconoce para
+ * cargarla/editarla/eliminarla — ver DYNAMIC_SECTION_TYPES más abajo.
+ */
+export interface ProductSection3D {
+  type: 'product-3d'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
+  title: string
+  description: string
+  /** URL del .glb (Cloudinary u otro host) — de solo lectura en el panel por ahora. */
+  glbUrl: string
+  price: string
+  /** Precio anterior opcional, se muestra tachado junto al precio. */
+  priceOriginal?: string
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
+}
+
+export type DynamicSectionData = CtaBannerData | MenuGridData | TextBlockData | PhotoGalleryData | FaqData | ProductSection3D
+
+/**
+ * Todos los tipos de sección dinámica que el sitio sabe CARGAR/mostrar/eliminar
+ * — superset de SectionTemplateType (los creables desde "+ Nueva sección").
+ * 'product-3d' está aquí pero no en SECTION_TEMPLATES: se puede editar y
+ * borrar una vez que existe, pero no se ofrece como opción para crear una
+ * nueva todavía.
+ */
+export type DynamicSectionType = SectionTemplateType | 'product-3d'
 
 /** id corto y único para tarjetas / fotos / párrafos / preguntas. */
 export function newItemId(): string {
@@ -444,11 +476,14 @@ export function emptyDynamicSection(type: SectionTemplateType): DynamicSectionDa
   }
 }
 
-/** Deduce el tipo de plantilla de una sección (por su campo `type`, o por el prefijo del id). */
-export function templateTypeOf(id: string, raw?: { type?: string } | null): SectionTemplateType | null {
+/** Deduce el tipo de sección dinámica (por su campo `type`, o por el prefijo del id) —
+ * incluye 'product-3d' aunque no sea creable desde "+ Nueva sección" (ver DynamicSectionType). */
+export function templateTypeOf(id: string, raw?: { type?: string } | null): DynamicSectionType | null {
   if (raw?.type && isTemplateType(raw.type)) return raw.type
+  if (raw?.type === 'product-3d') return 'product-3d'
   for (const t of TEMPLATE_TYPES) {
     if (id === t || id.startsWith(`${t}-`)) return t
   }
+  if (id === 'product-3d' || id.startsWith('product-3d-')) return 'product-3d'
   return null
 }
