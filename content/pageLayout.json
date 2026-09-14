@@ -46,6 +46,11 @@
       "visible": true
     },
     {
+      "id": "redes-sociales",
+      "label": "Redes sociales",
+      "visible": true
+    },
+    {
       "id": "cta-banner-contactos",
       "label": "CONTACTOS",
       "visible": true
@@ -53,11 +58,6 @@
     {
       "id": "location",
       "label": "Ubicación",
-      "visible": true
-    },
-    {
-      "id": "redes-sociales",
-      "label": "Redes sociales",
       "visible": true
     }
   ]
