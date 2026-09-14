@@ -54,6 +54,11 @@
       "id": "location",
       "label": "Ubicación",
       "visible": true
+    },
+    {
+      "id": "redes-sociales",
+      "label": "Redes sociales",
+      "visible": true
     }
   ]
 }
