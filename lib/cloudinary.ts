@@ -84,3 +84,20 @@ export function uploadBufferToCloudinary(
     stream.end(buffer)
   })
 }
+
+/**
+ * Borra un recurso de Cloudinary por su public_id completo (con folder
+ * incluido, ej. "nieve-artesanal/raw-tmp-123.glb"). Se usa para limpiar el
+ * .glb temporal sin optimizar una vez que la versión final ya se subió — si
+ * falla, no es grave (el temporal solo ocupa espacio, no rompe nada), así
+ * que el llamador decide si quiere tratarlo como error o solo loguearlo.
+ */
+export function deleteFromCloudinary(publicId: string, resourceType: 'raw' | 'image' | 'video'): Promise<void> {
+  ensureSdkConfigured()
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: resourceType }, (error) => {
+      if (error) reject(error instanceof Error ? error : new Error('Cloudinary no pudo borrar el recurso.'))
+      else resolve()
+    })
+  })
+}
