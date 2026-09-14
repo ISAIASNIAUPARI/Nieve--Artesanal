@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { upload } from '@vercel/blob/client'
 
 type UploadState =
   | { phase: 'idle' }
@@ -9,29 +8,70 @@ type UploadState =
   | { phase: 'optimizing' }
   | { phase: 'done' }
   | { phase: 'done-manual'; url: string }
-  | { phase: 'error'; message: string; retryBlobUrl?: string }
+  | { phase: 'error'; message: string; retryPublicId?: string }
 
 const MAX_BYTES = 50 * 1024 * 1024
+
+interface RawUploadSign {
+  ok: true
+  cloudName: string
+  apiKey: string
+  folder: string
+  publicId: string
+  timestamp: number
+  signature: string
+}
+
+/** Sube el .glb crudo directo navegador → Cloudinary con XHR (para progreso real). */
+function uploadRawToCloudinary(file: File, sign: RawUploadSign, onProgress: (pct: number) => void): Promise<void> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('api_key', sign.apiKey)
+  form.append('timestamp', String(sign.timestamp))
+  form.append('folder', sign.folder)
+  form.append('public_id', sign.publicId)
+  form.append('signature', sign.signature)
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/raw/upload`)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve()
+      } else {
+        let msg = `Cloudinary respondió ${xhr.status}.`
+        try {
+          msg = JSON.parse(xhr.responseText)?.error?.message || msg
+        } catch {
+          /* deja el mensaje genérico */
+        }
+        reject(new Error(msg))
+      }
+    }
+    xhr.onerror = () => reject(new Error('Error de red al subir a Cloudinary.'))
+    xhr.send(form)
+  })
+}
 
 /**
  * Drop zone para reemplazar el .glb de una sección product-3d — en dos pasos:
  *
- *   1. El navegador sube el .glb TAL CUAL directo a Vercel Blob (con un token
- *      de un solo uso de /api/admin/upload-3d-token), así nunca pasa por el
- *      body de nuestra función serverless. Antes esto se intentó con
- *      Cloudinary directo (como imágenes/video) y con subida en partes, pero
- *      la cuenta de Cloudinary tiene un tope de ~10 MB por recurso "raw" que
- *      ni partiendo el archivo se puede sortear (valida contra el tamaño
- *      TOTAL declarado, no contra cada petición). Vercel Blob no tiene ese
- *      tipo de tope y es el storage nativo de la misma plataforma del sitio.
+ *   1. El navegador sube el .glb TAL CUAL directo a Cloudinary (con una firma
+ *      de un solo uso de /api/admin/upload-3d-sign), igual que ya hacen las
+ *      imágenes y el video. Así nunca pasa por el body de una función
+ *      serverless de Vercel — antes, con el archivo pasando entero por
+ *      nuestro servidor, cualquier .glb de más de ~4 MB fallaba con un 413
+ *      (límite de la plataforma, no de esta app) sin llegar a ejecutarse
+ *      nuestro código.
  *   2. /api/admin/optimize-3d descarga ese archivo por su URL (un fetch
- *      saliente del servidor no tiene límite de body entrante), lo optimiza
- *      con gltf-transform (mismo pipeline de siempre) y sube la versión
- *      final a Cloudinary — el almacenamiento final del modelo optimizado
- *      no cambia, solo el paso intermedio de subida del archivo crudo.
+ *      saliente del servidor no tiene ese límite), lo optimiza con
+ *      gltf-transform (mismo pipeline de siempre) y sube la versión final.
  *
  * Si el paso 2 falla, no hace falta volver a subir el archivo: se reintenta
- * solo la optimización con la misma URL de Blob temporal (retryBlobUrl).
+ * solo la optimización con el mismo public_id temporal (ver retryPublicId).
  *
  * "Guardar cambios" es quien de verdad publica el resultado (commit a
  * GitHub) — igual que con imágenes/video.
@@ -41,18 +81,18 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  async function runOptimize(blobUrl: string) {
+  async function runOptimize(publicId: string) {
     setState({ phase: 'optimizing' })
     try {
       const res = await fetch('/api/admin/optimize-3d', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blobUrl }),
+        body: JSON.stringify({ publicId }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.ok) {
         const detail = data?.error || `Error del servidor (${res.status}${res.statusText ? ' ' + res.statusText : ''}).`
-        setState({ phase: 'error', message: detail, retryBlobUrl: data?.retryBlobUrl || blobUrl })
+        setState({ phase: 'error', message: detail, retryPublicId: data?.retryPublicId || publicId })
         return
       }
       // La subida a Cloudinary ya fue exitosa en este punto — si onUploaded()
@@ -69,7 +109,7 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       setState({
         phase: 'error',
         message: err instanceof Error ? err.message : 'Error al optimizar el modelo.',
-        retryBlobUrl: blobUrl,
+        retryPublicId: publicId,
       })
     }
   }
@@ -85,36 +125,20 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
     }
 
     setState({ phase: 'uploading', pct: 0 })
-    // Sin esto, si la subida a Vercel Blob se cuelga (visto en la práctica:
-    // se queda pegada cerca del 100% sin terminar nunca, incluso con
-    // archivos chicos) el usuario se queda con el spinner girando para
-    // siempre, sin ningún error que mostrar ni forma de reintentar.
-    const abortController = new AbortController()
-    // Generoso a propósito (asume una subida lenta, ~150 KB/s) para no cortar
-    // archivos grandes que de verdad están progresando, pero con un piso de
-    // 60s para no ser demasiado agresivo con archivos chicos.
-    const timeoutMs = Math.max(60_000, (file.size / (150 * 1024)) * 1000)
-    const timeoutId = setTimeout(() => abortController.abort(), timeoutMs)
     try {
-      const blob = await upload(`raw-tmp/${Date.now()}-${file.name}`, file, {
-        access: 'public',
-        handleUploadUrl: '/api/admin/upload-3d-token',
-        abortSignal: abortController.signal,
-        onUploadProgress: ({ percentage }) => setState({ phase: 'uploading', pct: Math.round(percentage) }),
+      const signRes = await fetch('/api/admin/upload-3d-sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bytes: file.size }),
       })
-      clearTimeout(timeoutId)
-      await runOptimize(blob.url)
+      const sign = await signRes.json().catch(() => null)
+      if (!signRes.ok || !sign?.ok) {
+        throw new Error(sign?.error || 'No se pudo iniciar la subida.')
+      }
+      await uploadRawToCloudinary(file, sign, (pct) => setState({ phase: 'uploading', pct }))
+      await runOptimize(sign.publicId)
     } catch (err) {
-      clearTimeout(timeoutId)
-      const timedOut = abortController.signal.aborted
-      setState({
-        phase: 'error',
-        message: timedOut
-          ? `La subida tardó demasiado y se canceló (${Math.round(timeoutMs / 1000)}s). Puede ser un problema de conexión — reintenta o prueba con otra red.`
-          : err instanceof Error
-            ? err.message
-            : 'Error al subir el modelo.',
-      })
+      setState({ phase: 'error', message: err instanceof Error ? err.message : 'Error al subir el modelo.' })
     }
   }
 
@@ -125,8 +149,8 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       <div
         onClick={() => {
           if (busy) return
-          if (state.phase === 'error' && state.retryBlobUrl) {
-            runOptimize(state.retryBlobUrl)
+          if (state.phase === 'error' && state.retryPublicId) {
+            runOptimize(state.retryPublicId)
             return
           }
           inputRef.current?.click()
@@ -183,7 +207,7 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
           <span style={{ color: '#c0392b' }}>
             ⚠ {state.message} —{' '}
             <span style={{ textDecoration: 'underline', fontWeight: 600 }}>
-              {state.retryBlobUrl ? 'clic para reintentar (sin volver a subir)' : 'clic para reintentar'}
+              {state.retryPublicId ? 'clic para reintentar (sin volver a subir)' : 'clic para reintentar'}
             </span>
           </span>
         )}
