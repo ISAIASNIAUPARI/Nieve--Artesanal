@@ -8,7 +8,7 @@ const nextConfig = {
   // defecto), esa búsqueda se rompe porque el código ya no vive en esa carpeta.
   // serverExternalPackages los deja como require()/import reales, resueltos por
   // Node normalmente desde node_modules — confirmado necesario en local: sin
-  // esto, app/api/admin/upload-3d/route.ts fallaba con ENOENT buscando
+  // esto, app/api/admin/optimize-3d/route.ts fallaba con ENOENT buscando
   // draco_decoder_gltf.wasm en una ruta que Next inventó al empaquetar.
   serverExternalPackages: ['@gltf-transform/core', '@gltf-transform/extensions', '@gltf-transform/functions', 'draco3dgltf', 'sharp'],
   images: {

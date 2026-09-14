@@ -4,35 +4,115 @@ import { useRef, useState } from 'react'
 
 type UploadState =
   | { phase: 'idle' }
+  | { phase: 'uploading'; pct: number }
   | { phase: 'optimizing' }
-  | { phase: 'uploading' }
   | { phase: 'done' }
   | { phase: 'done-manual'; url: string }
-  | { phase: 'error'; message: string }
+  | { phase: 'error'; message: string; retryPublicId?: string }
 
 const MAX_BYTES = 50 * 1024 * 1024
 
+interface RawUploadSign {
+  ok: true
+  cloudName: string
+  apiKey: string
+  folder: string
+  publicId: string
+  timestamp: number
+  signature: string
+}
+
+/** Sube el .glb crudo directo navegador → Cloudinary con XHR (para progreso real). */
+function uploadRawToCloudinary(file: File, sign: RawUploadSign, onProgress: (pct: number) => void): Promise<void> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('api_key', sign.apiKey)
+  form.append('timestamp', String(sign.timestamp))
+  form.append('folder', sign.folder)
+  form.append('public_id', sign.publicId)
+  form.append('signature', sign.signature)
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/raw/upload`)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve()
+      } else {
+        let msg = `Cloudinary respondió ${xhr.status}.`
+        try {
+          msg = JSON.parse(xhr.responseText)?.error?.message || msg
+        } catch {
+          /* deja el mensaje genérico */
+        }
+        reject(new Error(msg))
+      }
+    }
+    xhr.onerror = () => reject(new Error('Error de red al subir a Cloudinary.'))
+    xhr.send(form)
+  })
+}
+
 /**
- * Drop zone para reemplazar el .glb de una sección product-3d: arrastra o haz
- * clic, se sube a /api/admin/upload-3d (optimiza con gltf-transform y sube a
- * Cloudinary del lado del servidor), y al terminar llama `onUploaded(url)`
- * para que el componente padre actualice el campo glbUrl en el JSON de la
- * sección — "Guardar cambios" es quien de verdad lo publica (commit a
- * GitHub), igual que con imágenes/video.
+ * Drop zone para reemplazar el .glb de una sección product-3d — en dos pasos:
  *
- * Los "pasos" de la barra de progreso son una sola petición de principio a
- * fin (el servidor optimiza y sube en un solo POST) — no hay forma de saber
- * desde el navegador en qué paso exacto va el servidor sin algo más pesado
- * (SSE/polling) que no hace falta aquí. "Optimizando" se muestra de
- * inmediato y pasa a "Subiendo a Cloudinary" tras una pausa breve, para dar
- * la sensación de las dos etapas reales sin inventar un mecanismo de
- * progreso en vivo.
+ *   1. El navegador sube el .glb TAL CUAL directo a Cloudinary (con una firma
+ *      de un solo uso de /api/admin/upload-3d-sign), igual que ya hacen las
+ *      imágenes y el video. Así nunca pasa por el body de una función
+ *      serverless de Vercel — antes, con el archivo pasando entero por
+ *      nuestro servidor, cualquier .glb de más de ~4 MB fallaba con un 413
+ *      (límite de la plataforma, no de esta app) sin llegar a ejecutarse
+ *      nuestro código.
+ *   2. /api/admin/optimize-3d descarga ese archivo por su URL (un fetch
+ *      saliente del servidor no tiene ese límite), lo optimiza con
+ *      gltf-transform (mismo pipeline de siempre) y sube la versión final.
+ *
+ * Si el paso 2 falla, no hace falta volver a subir el archivo: se reintenta
+ * solo la optimización con el mismo public_id temporal (ver retryPublicId).
+ *
+ * "Guardar cambios" es quien de verdad publica el resultado (commit a
+ * GitHub) — igual que con imágenes/video.
  */
 export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string) => void }) {
   const [state, setState] = useState<UploadState>({ phase: 'idle' })
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const stageTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function runOptimize(publicId: string) {
+    setState({ phase: 'optimizing' })
+    try {
+      const res = await fetch('/api/admin/optimize-3d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicId }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.ok) {
+        const detail = data?.error || `Error del servidor (${res.status}${res.statusText ? ' ' + res.statusText : ''}).`
+        setState({ phase: 'error', message: detail, retryPublicId: data?.retryPublicId || publicId })
+        return
+      }
+      // La subida a Cloudinary ya fue exitosa en este punto — si onUploaded()
+      // falla al actualizar el campo en el admin, no es un error de subida:
+      // no hay que perder la URL ni pedir que se suba el archivo de nuevo.
+      try {
+        onUploaded(data.glbUrl)
+        setState({ phase: 'done' })
+      } catch (callbackErr) {
+        console.error('[Glb3DUploader] subida exitosa pero falló al actualizar el campo:', callbackErr)
+        setState({ phase: 'done-manual', url: data.glbUrl })
+      }
+    } catch (err) {
+      setState({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Error al optimizar el modelo.',
+        retryPublicId: publicId,
+      })
+    }
+  }
 
   async function handleFile(file: File) {
     if (!file.name.toLowerCase().endsWith('.glb')) {
@@ -44,47 +124,37 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
       return
     }
 
-    setState({ phase: 'optimizing' })
-    if (stageTimer.current) clearTimeout(stageTimer.current)
-    stageTimer.current = setTimeout(() => setState({ phase: 'uploading' }), 900)
-
+    setState({ phase: 'uploading', pct: 0 })
     try {
-      const form = new FormData()
-      form.append('file', file)
-      const res = await fetch('/api/admin/upload-3d', { method: 'POST', body: form })
-      // Si la respuesta no es JSON (ej. un 413/502/504 del propio hosting, antes
-      // de que nuestra ruta llegue a ejecutarse), data.error queda vacío — mejor
-      // mostrar el status HTTP que un mensaje genérico sin ninguna pista.
-      const data = await res.json().catch(() => null)
-      if (!res.ok || !data?.ok) {
-        const detail =
-          data?.error ||
-          `Error del servidor (${res.status}${res.statusText ? ' ' + res.statusText : ''}). Si el archivo es grande, puede deberse al límite de tamaño de subida del hosting.`
-        throw new Error(detail)
+      const signRes = await fetch('/api/admin/upload-3d-sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bytes: file.size }),
+      })
+      const sign = await signRes.json().catch(() => null)
+      if (!signRes.ok || !sign?.ok) {
+        throw new Error(sign?.error || 'No se pudo iniciar la subida.')
       }
-      if (stageTimer.current) clearTimeout(stageTimer.current)
-      // A partir de acá el .glb YA está en Cloudinary — si onUploaded() falla al
-      // actualizar el campo en el admin, no es un error de subida: no hay que
-      // perder la URL ni pedirle al usuario que vuelva a subir el archivo.
-      try {
-        onUploaded(data.glbUrl)
-        setState({ phase: 'done' })
-      } catch (callbackErr) {
-        console.error('[Glb3DUploader] subida exitosa pero falló al actualizar el campo:', callbackErr)
-        setState({ phase: 'done-manual', url: data.glbUrl })
-      }
+      await uploadRawToCloudinary(file, sign, (pct) => setState({ phase: 'uploading', pct }))
+      await runOptimize(sign.publicId)
     } catch (err) {
-      if (stageTimer.current) clearTimeout(stageTimer.current)
       setState({ phase: 'error', message: err instanceof Error ? err.message : 'Error al subir el modelo.' })
     }
   }
 
-  const busy = state.phase === 'optimizing' || state.phase === 'uploading'
+  const busy = state.phase === 'uploading' || state.phase === 'optimizing'
 
   return (
     <div style={{ marginTop: 8 }}>
       <div
-        onClick={() => !busy && inputRef.current?.click()}
+        onClick={() => {
+          if (busy) return
+          if (state.phase === 'error' && state.retryPublicId) {
+            runOptimize(state.retryPublicId)
+            return
+          }
+          inputRef.current?.click()
+        }}
         onDragEnter={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -120,8 +190,8 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
         }}
       >
         {state.phase === 'idle' && <span>Arrastra tu .glb aquí o haz clic para seleccionar</span>}
+        {state.phase === 'uploading' && <span>⏳ Subiendo… {state.pct}%</span>}
         {state.phase === 'optimizing' && <span>⏳ Optimizando modelo…</span>}
-        {state.phase === 'uploading' && <span>⏳ Subiendo a Cloudinary…</span>}
         {state.phase === 'done' && (
           <span style={{ color: '#2f8f52', fontWeight: 600 }}>✓ Modelo actualizado — Guarda los cambios para publicar</span>
         )}
@@ -135,7 +205,10 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
         )}
         {state.phase === 'error' && (
           <span style={{ color: '#c0392b' }}>
-            ⚠ {state.message} — <span style={{ textDecoration: 'underline', fontWeight: 600 }}>clic para reintentar</span>
+            ⚠ {state.message} —{' '}
+            <span style={{ textDecoration: 'underline', fontWeight: 600 }}>
+              {state.retryPublicId ? 'clic para reintentar (sin volver a subir)' : 'clic para reintentar'}
+            </span>
           </span>
         )}
       </div>
