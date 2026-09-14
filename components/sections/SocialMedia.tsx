@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import type { SocialMediaSection } from '@/lib/types'
 import { safeHref } from '@/lib/types'
+import CloudinaryVideo from '../editable/CloudinaryVideo'
 import { SectionHeading, SectionShell } from './sectionKit'
 
 /** URLs fijas — no forman parte del dato de la sección (nunca cambian por cliente). */
@@ -28,12 +28,26 @@ const hr: React.CSSProperties = {
   borderTop: '1px solid var(--line)',
 }
 
-const editInput: React.CSSProperties = {
-  width: '100%',
+/** Mismo estilo estructural que el campo "Destino" de ButtonsEditor (label
+ * arriba, input con borde, ancho completo) — en versión clara, porque acá el
+ * campo vive dentro de la sección (fondo claro), no en un panel flotante
+ * oscuro como el de los botones. El borde usa un gris neutro fijo en vez de
+ * var(--line) — ese token puede salir casi invisible según los 3 colores que
+ * elija el cliente, y el campo tiene que leerse como un input sí o sí. */
+const linkLabel: React.CSSProperties = {
+  display: 'block',
   marginTop: 6,
-  padding: '5px 7px',
+  fontSize: 10,
+  color: 'var(--ink-soft)',
+  fontFamily: 'system-ui, sans-serif',
+}
+const linkInput: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
+  marginTop: 2,
+  padding: '7px 9px',
   borderRadius: 6,
-  border: '1px solid var(--line)',
+  border: '1px solid #00000033',
   background: '#fff',
   color: 'var(--ink)',
   fontSize: 11,
@@ -45,9 +59,11 @@ const editInput: React.CSSProperties = {
  * grid de 4 videos verticales reproducibles en la página, basada en el
  * diseño del ZIP de Claude Design ("Plantilla de redes sociales").
  *
- * Los `src` de los <video> se asignan en useEffect (no como prop `src` en el
- * JSX) a propósito — así el navegador no arranca a precargar metadata de los
- * 4 videos apenas se parsea el HTML, solo después de montar.
+ * Los videos usan CloudinaryVideo (mismo componente/patrón que las fotos de
+ * PhotoGallery, pero para video) — en edición, clic o arrastrar-y-soltar
+ * sube un archivo nuevo con el mismo "🎬 Cambiar video" que ya usa
+ * VideoSection.tsx para el video del hero. En el sitio público solo se ve el
+ * <video> con sus controles nativos — nunca la URL como texto.
  *
  * Solo animación de opacity (vía el `fadeUp` de globals.css, que usa
  * margin-top en vez de transform) — un transform activo en un contenedor
@@ -68,14 +84,6 @@ export default function SocialMedia({
   onChange?: (data: SocialMediaSection | ((prev: SocialMediaSection) => SocialMediaSection)) => void
 }) {
   const videos = data.videos ?? []
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
-
-  useEffect(() => {
-    videos.forEach((src, i) => {
-      const el = videoRefs.current[i]
-      if (el && el.src !== src) el.src = src || ''
-    })
-  }, [videos])
 
   const updateLink = (network: keyof SocialMediaSection['links'], value: string) =>
     onChange?.((prev) => ({ ...prev, links: { ...prev.links, [network]: value } }))
@@ -118,7 +126,7 @@ export default function SocialMedia({
         }}
       >
         {(Object.keys(LOGOS) as (keyof typeof LOGOS)[]).map((network) => (
-          <div key={network} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, maxWidth: 140 }}>
+          <div key={network} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: 160 }}>
             <a
               href={safeHref(data.links?.[network])}
               target={edit ? undefined : '_blank'}
@@ -170,13 +178,16 @@ export default function SocialMedia({
               </span>
             </a>
             {edit && (
-              <input
-                type="text"
-                value={data.links?.[network] || ''}
-                onChange={(e) => updateLink(network, e.target.value)}
-                placeholder="https://…"
-                style={editInput}
-              />
+              <label style={{ width: '100%' }}>
+                <span style={linkLabel}>URL de {LOGOS[network].label}</span>
+                <input
+                  type="text"
+                  value={data.links?.[network] || ''}
+                  onChange={(e) => updateLink(network, e.target.value)}
+                  placeholder="https://…"
+                  style={linkInput}
+                />
+              </label>
             )}
           </div>
         ))}
@@ -189,28 +200,13 @@ export default function SocialMedia({
         style={{ marginTop: 48, maxWidth: 1280, marginLeft: 'auto', marginRight: 'auto', animation: 'fadeUp .8s ease' }}
       >
         {videos.map((src, i) => (
-          <div key={i}>
-            <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--line)', background: '#000' }}>
-              <video
-                ref={(el) => {
-                  videoRefs.current[i] = el
-                }}
-                controls
-                preload="metadata"
-                playsInline
-                controlsList="nofullscreen nodownload"
-                style={{ width: '100%', aspectRatio: '9/16', display: 'block', objectFit: 'cover', background: '#000' }}
-              />
-            </div>
-            {edit && (
-              <input
-                type="text"
-                value={src || ''}
-                onChange={(e) => updateVideo(i, e.target.value)}
-                placeholder={`URL video ${i + 1}`}
-                style={editInput}
-              />
-            )}
+          <div key={i} style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--line)', background: '#000', aspectRatio: '9/16' }}>
+            <CloudinaryVideo
+              src={src}
+              edit={edit}
+              onUploaded={(url) => updateVideo(i, url)}
+              wrapperStyle={{ width: '100%', height: '100%' }}
+            />
           </div>
         ))}
       </div>
