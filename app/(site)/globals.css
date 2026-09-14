@@ -27,6 +27,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* El navegador le pone margin: 8px a <body> por defecto si nadie lo anula —
+   sin este reset queda un borde visible alrededor de todo el sitio (el .site
+   de abajo solo resetea el margen del div interno, no el de <body>). */
+body {
+  margin: 0;
+}
+
 .site {
   margin: 0;
   background: var(--bg);
