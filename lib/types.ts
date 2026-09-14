@@ -429,16 +429,47 @@ export interface ProductSection3D {
   backgroundColor?: ThemeColorChoice
 }
 
-export type DynamicSectionData = CtaBannerData | MenuGridData | TextBlockData | PhotoGalleryData | FaqData | ProductSection3D
+/**
+ * Sección de redes sociales: logos clicables (Facebook/TikTok/Instagram, URLs
+ * fijas de Cloudinary hardcodeadas en el componente — no forman parte del
+ * dato) + 4 videos verticales reproducibles en la página. Igual que
+ * ProductSection3D, no está en SECTION_TEMPLATES a propósito (no es creable
+ * desde "+ Nueva sección" todavía) — se siembra a mano en
+ * content/sections/redes-sociales.json.
+ */
+export interface SocialMediaSection {
+  type: 'social-media'
+  /** Etiqueta pequeña opcional encima del título — "" no se muestra. */
+  subtitle?: string
+  title: string
+  links: {
+    facebook: string
+    instagram: string
+    tiktok: string
+  }
+  /** Siempre 4 URLs de Cloudinary, en orden — sin add/remove desde el admin. */
+  videos: string[]
+  /** Sin definir, usa el fondo por defecto del sitio. */
+  backgroundColor?: ThemeColorChoice
+}
+
+export type DynamicSectionData =
+  | CtaBannerData
+  | MenuGridData
+  | TextBlockData
+  | PhotoGalleryData
+  | FaqData
+  | ProductSection3D
+  | SocialMediaSection
 
 /**
  * Todos los tipos de sección dinámica que el sitio sabe CARGAR/mostrar/eliminar
  * — superset de SectionTemplateType (los creables desde "+ Nueva sección").
- * 'product-3d' está aquí pero no en SECTION_TEMPLATES: se puede editar y
- * borrar una vez que existe, pero no se ofrece como opción para crear una
- * nueva todavía.
+ * 'product-3d' y 'social-media' están aquí pero no en SECTION_TEMPLATES: se
+ * pueden editar y borrar una vez que existen, pero no se ofrecen como opción
+ * para crear una nueva todavía.
  */
-export type DynamicSectionType = SectionTemplateType | 'product-3d'
+export type DynamicSectionType = SectionTemplateType | 'product-3d' | 'social-media'
 
 /** id corto y único para tarjetas / fotos / párrafos / preguntas. */
 export function newItemId(): string {
@@ -481,9 +512,11 @@ export function emptyDynamicSection(type: SectionTemplateType): DynamicSectionDa
 export function templateTypeOf(id: string, raw?: { type?: string } | null): DynamicSectionType | null {
   if (raw?.type && isTemplateType(raw.type)) return raw.type
   if (raw?.type === 'product-3d') return 'product-3d'
+  if (raw?.type === 'social-media') return 'social-media'
   for (const t of TEMPLATE_TYPES) {
     if (id === t || id.startsWith(`${t}-`)) return t
   }
   if (id === 'product-3d' || id.startsWith('product-3d-')) return 'product-3d'
+  if (id === 'social-media' || id.startsWith('social-media-')) return 'social-media'
   return null
 }
