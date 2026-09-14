@@ -267,7 +267,13 @@ function SortableSectionRow({
   onRemove: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: s.id })
-  const isDynamic = !!templateTypeOf(s.id)
+  const { dynamic } = useEdit()
+  // templateTypeOf(s.id) adivina el tipo por el prefijo del id (ej.
+  // "faq-dedicado-a" → 'faq') — no sirve para una sección cuyo id no sigue
+  // esa convención (ej. "test-3d" para el tipo 'product-3d'). `dynamic[s.id]`
+  // es la fuente de verdad real: si el contenido ya se cargó como sección
+  // dinámica, lo es, sin importar cómo se llame su id.
+  const isDynamic = !!(templateTypeOf(s.id) || dynamic[s.id])
 
   return (
     <div

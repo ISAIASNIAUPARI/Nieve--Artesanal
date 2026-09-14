@@ -49,6 +49,11 @@
       "id": "location",
       "label": "Ubicación",
       "visible": true
+    },
+    {
+      "id": "test-3d",
+      "label": "Producto 3D",
+      "visible": true
     }
   ]
 }

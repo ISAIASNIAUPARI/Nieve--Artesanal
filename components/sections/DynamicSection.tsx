@@ -6,6 +6,7 @@ import MenuGrid from './MenuGrid'
 import TextBlock from './TextBlock'
 import PhotoGallery from './PhotoGallery'
 import Faq from './Faq'
+import ProductViewer3D from './ProductViewer3D'
 
 type Updater<T> = T | ((prev: T) => T)
 
@@ -42,6 +43,8 @@ export default function DynamicSection({
       return <PhotoGallery id={id} data={data} edit={edit} onChange={onChange as any} />
     case 'faq':
       return <Faq id={id} data={data} edit={edit} onChange={onChange as any} />
+    case 'product-3d':
+      return <ProductViewer3D id={id} data={data} edit={edit} onChange={onChange as any} />
     default:
       return null
   }
