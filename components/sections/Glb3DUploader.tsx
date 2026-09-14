@@ -85,15 +85,36 @@ export default function Glb3DUploader({ onUploaded }: { onUploaded: (url: string
     }
 
     setState({ phase: 'uploading', pct: 0 })
+    // Sin esto, si la subida a Vercel Blob se cuelga (visto en la práctica:
+    // se queda pegada cerca del 100% sin terminar nunca, incluso con
+    // archivos chicos) el usuario se queda con el spinner girando para
+    // siempre, sin ningún error que mostrar ni forma de reintentar.
+    const abortController = new AbortController()
+    // Generoso a propósito (asume una subida lenta, ~150 KB/s) para no cortar
+    // archivos grandes que de verdad están progresando, pero con un piso de
+    // 60s para no ser demasiado agresivo con archivos chicos.
+    const timeoutMs = Math.max(60_000, (file.size / (150 * 1024)) * 1000)
+    const timeoutId = setTimeout(() => abortController.abort(), timeoutMs)
     try {
       const blob = await upload(`raw-tmp/${Date.now()}-${file.name}`, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload-3d-token',
+        abortSignal: abortController.signal,
         onUploadProgress: ({ percentage }) => setState({ phase: 'uploading', pct: Math.round(percentage) }),
       })
+      clearTimeout(timeoutId)
       await runOptimize(blob.url)
     } catch (err) {
-      setState({ phase: 'error', message: err instanceof Error ? err.message : 'Error al subir el modelo.' })
+      clearTimeout(timeoutId)
+      const timedOut = abortController.signal.aborted
+      setState({
+        phase: 'error',
+        message: timedOut
+          ? `La subida tardó demasiado y se canceló (${Math.round(timeoutMs / 1000)}s). Puede ser un problema de conexión — reintenta o prueba con otra red.`
+          : err instanceof Error
+            ? err.message
+            : 'Error al subir el modelo.',
+      })
     }
   }
 
